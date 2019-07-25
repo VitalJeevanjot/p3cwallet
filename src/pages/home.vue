@@ -16,7 +16,15 @@
         class="q-gutter-md"
       >
       <q-card-section>
-        <q-input dense v-model="valueToSpend" type="number" step="0.01" min="0.01" autofocus @keyup.enter="openCreateCropEtcValueToSpentDialog = false"
+        <q-input dense v-model="p3cReceiver" label="P3C Crop of Receiver" type="text" autofocus
+        lazy-rules
+        :rules="[
+          val => val !== null && val !== '' || 'Please type P3C Crop address.'
+        ]"
+      />
+      </q-card-section>
+      <q-card-section>
+        <q-input dense v-model="valueToSpend" label="Amount" type="number" step="0.01" min="0.01" autofocus
         lazy-rules
         :rules="[
           val => val !== null && val !== '' || 'Please type something',
@@ -70,7 +78,7 @@
     </q-btn>
   </q-page-sticky>
   <q-page-sticky position='bottom-right' :offset='[18, 18]'>
-    <q-btn fab-mini icon='arrow_downward' class='bg-red text-white' @click='dialog=true'>
+    <q-btn fab-mini icon='arrow_downward' class='bg-red text-white' @click="makeTxs('SEND')">
       <q-badge color="red" class="q-ma-sm">Send</q-badge>
     </q-btn>
   </q-page-sticky>
@@ -138,7 +146,9 @@ export default {
       historyTransactions: [],
       spendEtcBtnColor: 'green',
       typeBalance: null,
-      getDynBalance: null
+      getDynBalance: null,
+      sendingP3C: false,
+      p3cReceiver: ''
     }
   },
   mounted () {
@@ -238,7 +248,7 @@ export default {
         this.$q.loading.hide()
         console.log(currentValue)
         if (currentValue.hash) {
-          this.historyTransactions.push({ type: 'Create Crop', etcSpent: this.valueToSpend, hash: currentValue.hash })
+          this.historyTransactions.push({ type: 'Create Crop', inP3C: false, valueSpent: this.valueToSpend, hash: currentValue.hash })
           this.$q.localStorage.set('historyTrxs', this.historyTransactions)
           this.$q.notify({
             message: 'Transaction Successful, Pull to refresh...',
@@ -266,7 +276,7 @@ export default {
       let boughtP3C = await this.cropAbi.buy(this.$referrer, this.$q.localStorage.getItem('overrides'))
       console.log(boughtP3C)
       if (boughtP3C.hash) {
-        this.historyTransactions.push({ type: 'Buy P3C', etcSpent: this.valueToSpend, hash: boughtP3C.hash })
+        this.historyTransactions.push({ type: 'Buy P3C', inP3C: false, valueSpent: this.valueToSpend, hash: boughtP3C.hash })
         this.$q.localStorage.set('historyTrxs', this.historyTransactions)
         this.$q.notify({
           message: 'Transaction Successful, Pull to refresh...',
@@ -297,7 +307,7 @@ export default {
       let soldP3C = await this.cropAbi.sell(sellingP3CAmount._hex, overrides)
       console.log(soldP3C)
       if (soldP3C.hash) {
-        this.historyTransactions.push({ type: 'Sell P3C', etcSpent: this.valueToSpend, hash: soldP3C.hash })
+        this.historyTransactions.push({ type: 'Sell P3C', inP3C: true, valueSpent: this.valueToSpend, hash: soldP3C.hash })
         this.$q.localStorage.set('historyTrxs', this.historyTransactions)
         this.$q.notify({
           message: 'Transaction Successful, Pull to refresh...',
@@ -326,7 +336,38 @@ export default {
       let getDividends = await this.cropAbi.withdraw(overrides)
       console.log(getDividends)
       if (getDividends.hash) {
-        this.historyTransactions.push({ type: 'Withdraw Dividends', etcSpent: this.valueToSpend, hash: getDividends.hash })
+        this.historyTransactions.push({ type: 'Withdraw Dividends', inP3C: true, valueSpent: this.valueToSpend, hash: getDividends.hash })
+        this.$q.localStorage.set('historyTrxs', this.historyTransactions)
+        this.$q.notify({
+          message: 'Transaction Successful, Pull to refresh...',
+          color: 'green'
+        })
+      } else {
+        this.$q.notify({
+          message: 'A problem occured while sending transaction but check blockExplorer First.',
+          color: 'warning'
+        })
+      }
+      this.$q.loading.hide()
+    },
+    async sendP3C () {
+      this.$q.loading.show()
+      this.openCreateCropEtcValueToSpentDialog = false
+      let sendingP3CAmount = this.$ethers.utils.parseEther(this.valueToSpend)
+      let feeWei = this.$ethers.utils.parseUnits('1.0', 'gwei')
+      let overrides = {
+        // The maximum units of gas for the transaction to use
+        gasLimit: 1200011,
+        // The price (in wei) per unit of gas
+        gasPrice: feeWei._hex,
+        // The nonce to use in the transaction
+        // The chain ID (or network ID) to use
+        chainId: 61
+      }
+      let sentP3C = await this.cropAbi.transfer(this.p3cReceiver, sendingP3CAmount._hex, overrides)
+      console.log(sentP3C)
+      if (sentP3C.hash) {
+        this.historyTransactions.push({ type: 'Sent P3C', inP3C: true, etcSpent: this.valueToSpend, hash: sentP3C.hash })
         this.$q.localStorage.set('historyTrxs', this.historyTransactions)
         this.$q.notify({
           message: 'Transaction Successful, Pull to refresh...',
@@ -392,14 +433,21 @@ export default {
       // #=> Creating crop
       console.log('in submit')
       if (this.btnSpentEtcText === 'Create Crop') {
+        this.sendingP3C = false
         this.setOvrride()
         this.createCrop()
       } else if (this.btnSpentEtcText === 'Buy P3C') {
+        this.sendingP3C = false
         this.setOvrride()
         this.buyP3C()
       } else if (this.btnSpentEtcText === 'Sell P3C') {
+        this.sendingP3C = false
         this.setOvrride()
         this.sellP3C()
+      } else if (this.btnSpentEtcText === 'Send P3C') {
+        this.sendingP3C = true
+        this.setOvrride()
+        this.sendP3C()
       }
     },
     onReset () {
@@ -423,6 +471,12 @@ export default {
         this.spendEtcBtnColor = 'orange'
         this.typeBalance = 'ETC'
         this.getDynBalance = this.etcBalance
+        this.openCreateCropEtcValueToSpentDialog = true
+      } else if (txsType === 'SEND') {
+        this.btnSpentEtcText = 'Send P3C'
+        this.spendEtcBtnColor = 'blue-6'
+        this.typeBalance = 'P3C'
+        this.getDynBalance = this.p3cBalance
         this.openCreateCropEtcValueToSpentDialog = true
       }
     },
