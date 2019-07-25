@@ -39,8 +39,11 @@
 <q-pull-to-refresh v-if='isRegistered' @refresh="refresh">
   <q-card bordered>
     <q-card-section v-if='isRegistered'>
+      <span class='text-h6 text-weight-light text-green'>P3C Dividends:</span> {{p3cDividends}}
+      <q-btn v-if="p3cDividends > 0" class="q-ml-sm text-white bg-green-6" icon="get_app" round></q-btn>
+    </q-card-section>
+    <q-card-section v-if='isRegistered'>
       <span class='text-h6 text-weight-light text-green'>P3C Balance:</span> {{p3cBalance}}
-      <!-- Show button to buy p3c with etc if balance is zero -->
     </q-card-section>
       <q-separator inset v-if='isRegistered' />
     <q-card-section v-if='isRegistered'>
@@ -53,6 +56,7 @@
       <q-separator inset v-if='isRegistered' />
     <q-card-section>
       <span class='text-h6 text-weight-light text-blue'>ETC:</span> {{etcBalance}}
+      <q-btn class="q-ml-sm text-white bg-blue-6" @click="openExplorer('ETC')" icon="open_in_new" round></q-btn>
     </q-card-section>
   </q-card>
 </q-pull-to-refresh>
@@ -98,7 +102,7 @@
       <span class="text-overline text-white">History</span>
     </q-chip>
     <q-chip color="green-4" style="height: max-content;">
-      <q-fab-action @click="onClick" color="white text-green" icon="open_in_new" />
+      <q-fab-action @click="openExplorer('P3C')" color="white text-green" icon="open_in_new" />
       <span class="text-overline text-white">Explorer</span>
     </q-chip>
     </q-fab>
@@ -118,6 +122,7 @@ export default {
       p3cBalanceInEtc: '',
       p3cBalanceInUsd: '',
       etcBalance: '',
+      p3cDividends: '',
       valueToSpend: '0.01',
       walletSaved: this.$q.localStorage.getItem('wallet'),
       privateKey: null,
@@ -195,6 +200,7 @@ export default {
         this.isRegistered = true
         this.btnSpentEtcText = 'Buy P3C'
         this.$q.localStorage.set('cropAddress', cropAddress)
+        // console.log(cropAddress)
         let cropAbi = new this.$ethers.Contract(cropAddress, this.$contracts.crop.abi, this.$etcProvider)
         this.cropAbi = cropAbi.connect(this.walletToGet)
         this.getcontractInfo()
@@ -205,8 +211,10 @@ export default {
     async getcontractInfo () {
       // if balance is zero then show a button to buy p3c
       let currentValue = await this.farmContractWithSigner.myCropTokens()
+      let p3cdivs = await this.farmContractWithSigner.myCropDividends()
       let realBalance = parseFloat(this.$ethers.utils.formatEther(currentValue))
       this.p3cBalance = parseFloat(this.$ethers.utils.formatEther(currentValue)).toFixed(2).toString()
+      this.p3cDividends = parseFloat(this.$ethers.utils.formatEther(p3cdivs)).toFixed(2).toString()
       this.$axios('https://api.p3c.io/chart/info').then((res) => {
         this.p3cBalanceInEtc = ((res.data.PriceETC * 0.8) * realBalance).toFixed(3)
         this.p3cBalanceInUsd = ((res.data.PriceUSD * 0.8) * realBalance).toFixed(3)
@@ -230,7 +238,7 @@ export default {
         this.$q.loading.hide()
         console.log(currentValue)
         if (currentValue.hash) {
-          this.historyTransactions.push({ etcSpent: this.valueToSpend, hash: currentValue.hash })
+          this.historyTransactions.push({ type: 'Create Crop', etcSpent: this.valueToSpend, hash: currentValue.hash })
           this.$q.localStorage.set('historyTrxs', this.historyTransactions)
           this.$q.notify({
             message: 'Transaction Successful, Pull to refresh...',
@@ -258,7 +266,7 @@ export default {
       let boughtP3C = await this.cropAbi.buy(this.$referrer, this.$q.localStorage.getItem('overrides'))
       console.log(boughtP3C)
       if (boughtP3C.hash) {
-        this.historyTransactions.push({ etcSpent: this.valueToSpend, hash: boughtP3C.hash })
+        this.historyTransactions.push({ type: 'Buy P3C', etcSpent: this.valueToSpend, hash: boughtP3C.hash })
         this.$q.localStorage.set('historyTrxs', this.historyTransactions)
         this.$q.notify({
           message: 'Transaction Successful, Pull to refresh...',
@@ -289,7 +297,36 @@ export default {
       let soldP3C = await this.cropAbi.sell(sellingP3CAmount._hex, overrides)
       console.log(soldP3C)
       if (soldP3C.hash) {
-        this.historyTransactions.push({ etcSpent: this.valueToSpend, hash: soldP3C.hash })
+        this.historyTransactions.push({ type: 'Sell P3C', etcSpent: this.valueToSpend, hash: soldP3C.hash })
+        this.$q.localStorage.set('historyTrxs', this.historyTransactions)
+        this.$q.notify({
+          message: 'Transaction Successful, Pull to refresh...',
+          color: 'green'
+        })
+      } else {
+        this.$q.notify({
+          message: 'A problem occured while sending transaction but check blockExplorer First.',
+          color: 'warning'
+        })
+      }
+      this.$q.loading.hide()
+    },
+    async withdrawDividendsP3C () {
+      this.$q.loading.show()
+      let feeWei = this.$ethers.utils.parseUnits('1.0', 'gwei')
+      let overrides = {
+        // The maximum units of gas for the transaction to use
+        gasLimit: 1200011,
+        // The price (in wei) per unit of gas
+        gasPrice: feeWei._hex,
+        // The nonce to use in the transaction
+        // The chain ID (or network ID) to use
+        chainId: 61
+      }
+      let getDividends = await this.cropAbi.withdraw(overrides)
+      console.log(getDividends)
+      if (getDividends.hash) {
+        this.historyTransactions.push({ type: 'Withdraw Dividends', etcSpent: this.valueToSpend, hash: getDividends.hash })
         this.$q.localStorage.set('historyTrxs', this.historyTransactions)
         this.$q.notify({
           message: 'Transaction Successful, Pull to refresh...',
@@ -387,6 +424,17 @@ export default {
         this.typeBalance = 'ETC'
         this.getDynBalance = this.etcBalance
         this.openCreateCropEtcValueToSpentDialog = true
+      }
+    },
+    openExplorer (type) {
+      if (type === 'ETC') {
+        let url = 'https://blockscout.com/etc/mainnet/address/' + this.$q.localStorage.getItem('wallet').signingKey.address
+        let win = window.open(url, '_blank')
+        win.focus()
+      } else {
+        let url = 'https://blockscout.com/etc/mainnet/address/' + this.$q.localStorage.getItem('cropAddress')
+        let win = window.open(url, '_blank')
+        win.focus()
       }
     }
   }
