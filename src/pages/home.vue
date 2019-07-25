@@ -106,7 +106,7 @@
       <span class="text-overline text-white">BUY</span>
     </q-chip>
     <q-chip color="green-4" style="height: max-content;">
-      <q-fab-action @click="onClick" color="white text-green" icon="history" />
+      <q-fab-action @click="showHistoryDialog = true" color="white text-green" icon="history" />
       <span class="text-overline text-white">History</span>
     </q-chip>
     <q-chip color="green-4" style="height: max-content;">
@@ -187,7 +187,7 @@ export default {
       getDynBalance: null,
       sendingP3C: false,
       p3cReceiver: '',
-      showHistoryDialog: true
+      showHistoryDialog: false
     }
   },
   mounted () {
@@ -391,6 +391,12 @@ export default {
       this.$q.loading.hide()
     },
     async sendP3C () {
+      if (this.p3cReceiver.trim() === this.$q.localStorage.getItem('cropAddress')) {
+        this.$q.notify({
+          color: 'warning',
+          message: 'Do not send p3c to your own address'
+        })
+      }
       this.$q.loading.show()
       this.openCreateCropEtcValueToSpentDialog = false
       let sendingP3CAmount = this.$ethers.utils.parseEther(this.valueToSpend)
@@ -404,7 +410,7 @@ export default {
         // The chain ID (or network ID) to use
         chainId: 61
       }
-      let sentP3C = await this.cropAbi.transfer(this.p3cReceiver, sendingP3CAmount._hex, overrides)
+      let sentP3C = await this.cropAbi.transfer(this.p3cReceiver.trim(), sendingP3CAmount._hex, overrides)
       console.log(sentP3C)
       if (sentP3C.hash) {
         this.historyTransactions.push({ type: 'Sent P3C', inP3C: true, etcSpent: this.valueToSpend, hash: sentP3C.hash })
@@ -535,6 +541,9 @@ export default {
       let url = 'https://blockscout.com/etc/mainnet/tx/' + txs
       let win = window.open(url, '_blank')
       win.focus()
+    },
+    shareCropAddress () {
+
     }
   }
 }
