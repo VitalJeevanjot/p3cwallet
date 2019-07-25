@@ -20,9 +20,7 @@
    <q-card>
      <q-card-section class="row items-center justify-center">
        <q-avatar icon="account_circle" color="primary" text-color="white" />
-       <span class="q-ml-sm">Your existing account in this wallet (if any exists) will be deleted,
-         Make sure to save it's private key before moving forward with this operation.
-        Click Private Key to add your ETC Wallet private key to this wallet.</span>
+       <span class="q-ml-sm">Click Private Key to add your ETC Wallet private key to this wallet.</span>
      </q-card-section>
 
      <q-card-actions align="right">
@@ -66,7 +64,7 @@
 <q-dialog v-model="showInsertEncryptionPinDialog" persistent>
   <q-card style="min-width: 300px">
     <q-card-section>
-      <div class="text-h6 text-weight-light">Enter 4 Digit Pin. <br/> <q-icon color="red" name="warning"/> Remember It or your account will be lost forever (There is no recovery)</div>
+      <div class="text-h6 text-weight-light">Enter 4 Digit Pin. <br/> <q-icon color="red" name="warning"/> Remember It or your account will be lost forever (There is no recovery), Then you should reinstall app to use new account or remove all it's data first.</div>
     </q-card-section>
 
     <q-card-section>
