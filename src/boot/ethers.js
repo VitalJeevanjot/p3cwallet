@@ -1,10 +1,10 @@
 // import something here
 import { ethers } from 'ethers'
-const Web3 = require('web3')
+// const Web3 = require('web3')
 // 'async' is optional
 export default async ({ Vue }) => {
   // something to do
-  Vue.prototype.$web3 = new Web3(Web3.givenProvider || 'https://www.ethercluster.com/etc', null, {})
+  // Vue.prototype.$web3 = new Web3(Web3.givenProvider || 'https://www.ethercluster.com/etc', null, {})
   Vue.prototype.$ethers = ethers
   Vue.prototype.$referrer = '0xB61EE49A82f19D2EFcF78FF7f5B523F36F08BbBf'
   // Vue.prototype.$etcProvider = new ethers.providers.JsonRpcProvider('https://rpc.astor.host/node')

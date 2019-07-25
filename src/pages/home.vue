@@ -4,9 +4,9 @@
   <div class="row justify-center q-ma-sm">
     <q-btn @click="openCreateCropModal()" v-if="!isRegistered && this.etcBalance > 0" rounded class="bg-indigo-8 text-white text-overline q-ma-sm" label="Create Crop" />
   </div>
-  <q-page-sticky position='top-right' :offset='[18, 0]'>
-    <q-btn fab-mini icon='delete' class='bg-red text-white' @click="showInsertEncryptionPinDialog=true">
-      <q-badge color="red" class="q-ma-sm">Delete</q-badge>
+  <q-page-sticky position='top-right' :offset='[18, 0]' style="z-index: 1">
+    <q-btn fab-mini icon='delete' class='bg-orange-4 text-white' @click="showInsertEncryptionPinDialog=true">
+      <q-badge color="orange" class="q-ma-sm">Delete</q-badge>
     </q-btn>
   </q-page-sticky>
   <q-dialog v-model="openCreateCropEtcValueToSpentDialog" persistent>
@@ -53,7 +53,7 @@
   <q-card bordered>
     <q-card-section v-if='isRegistered'>
       <span class='text-h6 text-weight-light text-green'>P3C Dividends:</span> {{p3cDividends}}
-      <q-btn v-if="p3cDividends > 0" class="q-ml-sm text-white bg-green-6" icon="get_app" round></q-btn>
+      <q-btn v-if="p3cDividends > 0" class="q-ml-sm text-white bg-green-6" icon="get_app" round @click="withdrawDividendsP3C()"></q-btn>
     </q-card-section>
     <q-card-section v-if='isRegistered'>
       <span class='text-h6 text-weight-light text-green'>P3C Balance:</span> {{p3cBalance}}
