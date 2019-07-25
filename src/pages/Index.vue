@@ -69,7 +69,7 @@
 <q-dialog v-model="showInsertEncryptionPinDialog" persistent>
   <q-card style="min-width: 300px">
     <q-card-section>
-      <div class="text-h6 text-weight-light">Enter 4 Digit Pin. Remember It or your account will be lost forever (There is no recovery)</div>
+      <div class="text-h6 text-weight-light">Enter 4 Digit Pin. <br/> <q-icon color="red" name="warning"/> Remember It or your account will be lost forever (There is no recovery)</div>
     </q-card-section>
 
     <q-card-section>
