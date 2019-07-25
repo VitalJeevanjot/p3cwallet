@@ -55,7 +55,9 @@ module.exports = function (ctx) {
         'QChip',
         'QForm',
         'QBadge',
-        'QPullToRefresh'
+        'QPullToRefresh',
+        'QMarkupTable',
+        'QTooltip'
       ],
 
       directives: [

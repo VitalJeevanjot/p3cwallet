@@ -15,8 +15,8 @@
         @reset="onReset"
         class="q-gutter-md"
       >
-      <q-card-section>
-        <q-input dense v-model="p3cReceiver" label="P3C Crop of Receiver" type="text" autofocus
+      <q-card-section v-if="sendingP3C">
+        <q-input dense v-model="p3cReceiver" label="P3C Crop of Receiver" type="text"
         lazy-rules
         :rules="[
           val => val !== null && val !== '' || 'Please type P3C Crop address.'
@@ -115,6 +115,44 @@
     </q-chip>
     </q-fab>
   </q-page-sticky>
+  <!-- Dialog for showing history -->
+  <q-dialog
+      v-model="showHistoryDialog"
+      persistent
+      :maximized="true"
+      transition-show="slide-up"
+      transition-hide="slide-down"
+    >
+    <q-card class="bg-grey-2 text-green-9">
+      <q-btn dense flat icon="close" v-close-popup>
+        <q-tooltip content-class="bg-white text-primary">Close</q-tooltip>
+      </q-btn>
+      <q-card-section>
+    <q-markup-table dark class="bg-indigo-8">
+      <thead>
+        <tr>
+          <th class="text-left">Type</th>
+          <th class="text-right">Value</th>
+          <th class="text-right">Token</th>
+          <th class="text-left">Hash</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="txs in historyTransactions" :key="txs.hash">
+          <td class="text-left">{{txs.type}}</td>
+          <td class="text-right">{{txs.valueSpent}}</td>
+          <td class="text-right" v-if="txs.inP3C">P3C</td>
+          <td class="text-right" v-if="!txs.inP3C">ETC</td>
+          <td >
+           <q-btn round class="text-green-5 bg-grey-1" icon="open_in_new" @click="openHashTxs(txs.hash)">
+           </q-btn>
+          </td>
+        </tr>
+      </tbody>
+    </q-markup-table>
+        </q-card-section>
+    </q-card>
+  </q-dialog>
 </q-page>
 </template>
 
@@ -148,12 +186,14 @@ export default {
       typeBalance: null,
       getDynBalance: null,
       sendingP3C: false,
-      p3cReceiver: ''
+      p3cReceiver: '',
+      showHistoryDialog: true
     }
   },
   mounted () {
     if (this.$q.localStorage.getItem('historyTrxs')) {
       this.historyTransactions = this.$q.localStorage.getItem('historyTrxs')
+      console.log(this.historyTransactions)
     }
     this.$q.loading.show()
     if (!this.$q.localStorage.getItem('overrides') || this.$q.localStorage.getItem('overrides') === null) {
@@ -433,19 +473,15 @@ export default {
       // #=> Creating crop
       console.log('in submit')
       if (this.btnSpentEtcText === 'Create Crop') {
-        this.sendingP3C = false
         this.setOvrride()
         this.createCrop()
       } else if (this.btnSpentEtcText === 'Buy P3C') {
-        this.sendingP3C = false
         this.setOvrride()
         this.buyP3C()
       } else if (this.btnSpentEtcText === 'Sell P3C') {
-        this.sendingP3C = false
         this.setOvrride()
         this.sellP3C()
       } else if (this.btnSpentEtcText === 'Send P3C') {
-        this.sendingP3C = true
         this.setOvrride()
         this.sendP3C()
       }
@@ -459,24 +495,28 @@ export default {
         this.spendEtcBtnColor = 'red'
         this.typeBalance = 'P3C'
         this.getDynBalance = this.p3cBalance
+        this.sendingP3C = false
         this.openCreateCropEtcValueToSpentDialog = true
       } else if (txsType === 'BUY') {
         this.btnSpentEtcText = 'Buy P3C'
         this.spendEtcBtnColor = 'green'
         this.typeBalance = 'ETC'
         this.getDynBalance = this.etcBalance
+        this.sendingP3C = false
         this.openCreateCropEtcValueToSpentDialog = true
       } else if (txsType === 'CREATE') {
         this.btnSpentEtcText = 'Create Crop'
         this.spendEtcBtnColor = 'orange'
         this.typeBalance = 'ETC'
         this.getDynBalance = this.etcBalance
+        this.sendingP3C = false
         this.openCreateCropEtcValueToSpentDialog = true
       } else if (txsType === 'SEND') {
         this.btnSpentEtcText = 'Send P3C'
         this.spendEtcBtnColor = 'blue-6'
         this.typeBalance = 'P3C'
         this.getDynBalance = this.p3cBalance
+        this.sendingP3C = true
         this.openCreateCropEtcValueToSpentDialog = true
       }
     },
@@ -490,6 +530,11 @@ export default {
         let win = window.open(url, '_blank')
         win.focus()
       }
+    },
+    openHashTxs (txs) {
+      let url = 'https://blockscout.com/etc/mainnet/tx/' + txs
+      let win = window.open(url, '_blank')
+      win.focus()
     }
   }
 }
