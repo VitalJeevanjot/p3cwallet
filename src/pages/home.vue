@@ -90,10 +90,6 @@
       color="white text-blue"
     >
     <q-chip color="green-4" style="height: max-content;">
-      <q-fab-action @click="onClick" color="white text-green" icon="exit_to_app" />
-      <span class="text-overline text-white">EXIT</span>
-    </q-chip>
-    <q-chip color="green-4" style="height: max-content;">
       <q-fab-action @click="showWalletViewEtc = true" color="white text-green" icon="account_balance_wallet" />
       <span class="text-overline text-white">Wallet</span>
     </q-chip>
@@ -537,9 +533,6 @@ export default {
     },
     openBuyP3CDialog () {
       this.openCreateCropEtcValueToSpentDialog = true
-    },
-    onClick () {
-      console.log('Clicked on a fab action')
     },
     openCreateCropModal () {
       this.openCreateCropEtcValueToSpentDialog = true
