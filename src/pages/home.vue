@@ -2,7 +2,7 @@
 <q-page padding>
   <!-- style='background-image: linear-gradient(white, #00bbff);' -->
   <div class="row justify-center q-ma-sm">
-    <q-btn @click="openCreateCropModal()" v-if="!isRegistered" rounded class="bg-indigo-8 text-white text-overline q-ma-sm" label="Create Crop" />
+    <q-btn @click="openCreateCropModal()" v-if="!isRegistered && this.etcBalance > 0" rounded class="bg-indigo-8 text-white text-overline q-ma-sm" label="Create Crop" />
   </div>
   <q-dialog v-model="openCreateCropEtcValueToSpentDialog" persistent>
     <q-card>
@@ -191,6 +191,7 @@ export default {
     }
   },
   mounted () {
+    window.StatusBar.backgroundColorByHexString('#ffffff')
     if (this.$q.localStorage.getItem('historyTrxs')) {
       this.historyTransactions = this.$q.localStorage.getItem('historyTrxs')
       console.log(this.historyTransactions)
