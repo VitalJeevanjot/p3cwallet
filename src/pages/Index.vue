@@ -7,16 +7,13 @@
       <q-btn class="text-blue-5" style="width:80vw" @click="importAccountDialog=true" outline rounded align="left" icon="account_circle" label="Import old account" />
     </div>
     <div class="row justify-center q-mt-xl">
-      <q-btn class="text-green-5 q-mt-md" style="width:60vw" outline rounded align="left" icon="info_outline" label="Help Airdrop" />
+      <q-btn class="text-green-5 q-mt-md" style="width:60vw" @click="openUrl('https://forum.saturn.network/t/tutorial-how-to-recieve-a-p3c-io-airdrop-on-your-phone-5-minute-tutorial/4144')" outline rounded align="left" icon="info_outline" label="Help Airdrop" />
     </div>
     <div class="row justify-center q-mt-sm">
-      <q-btn class="text-green-5" style="width:60vw" outline rounded align="left" icon="info_outline" label="Help Wiki" />
+      <q-btn class="text-green-5" style="width:60vw" @click="openUrl('https://p3c.io/use.html')" outline rounded align="left" icon="info_outline" label="P3C Website" />
     </div>
     <div class="row justify-center q-mt-sm">
-      <q-btn class="text-green-5" style="width:60vw" outline rounded align="left" icon="info_outline" label="P3C Website" />
-    </div>
-    <div class="row justify-center q-mt-sm">
-      <q-btn class="text-green-5" style="width:60vw" outline rounded align="left" icon="info_outline" label="P3C Trade" />
+      <q-btn class="text-green-5" style="width:60vw" @click="openUrl('http://p3c.trade/')" outline rounded align="left" icon="info_outline" label="P3C Trade" />
     </div>
 
     <q-dialog v-model="importAccountDialog" persistent>
@@ -130,12 +127,20 @@ export default {
   },
   methods: {
     async createAccount () {
+      if (this.encryptionPinProvided === false) {
+        this.showInsertEncryptionPinDialog = true
+        return
+      }
       let randomWallet = this.$ethers.Wallet.createRandom()
       let cipher = await this.$cryptojs.AES.encrypt(JSON.stringify(randomWallet), this.$q.sessionStorage.getItem('PinEnr')).toString()
       this.$q.localStorage.set('wallet', cipher)
       this.$router.push('home')
     },
     async keyAdded () {
+      if (this.encryptionPinProvided === false) {
+        this.showInsertEncryptionPinDialog = true
+        return
+      }
       // ask permission that saved wallet will be deleted
       let privateKey = this.privatekey
       let wallet = new this.$ethers.Wallet(privateKey)
@@ -158,6 +163,10 @@ export default {
       }
     },
     onReset () {
+    },
+    openUrl (url) {
+      let win = window.open(url, '_blank')
+      win.focus()
     }
   }
 }

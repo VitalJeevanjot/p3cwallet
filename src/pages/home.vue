@@ -265,11 +265,11 @@
         @reset="onReset"
         class="q-gutter-md"
       >
-      <q-input dense :rules="[val => val.length === 7 || 'Field is required']"
+      <q-input dense
          rounded outlined filled type="text"
           v-model="encryptionPin" autofocus
           mask= "#-#-#-#"
-          >
+      >
       </q-input>
       <q-card-actions align="right" class="text-primary">
         <q-btn flat label="Close" v-close-popup />
