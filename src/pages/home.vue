@@ -64,7 +64,7 @@
       <q-separator inset v-if='isRegistered' />
     <q-card-section>
       <span class='text-h6 text-weight-light text-blue'>ETC:</span> {{etcBalance}}
-      <q-btn class="q-ml-sm text-white bg-blue-6" @click="openExplorer('ETC')" icon="open_in_new" round></q-btn>
+      <q-btn class="q-ml-sm text-white bg-grey-6" @click="openExplorer('ETC')" icon="open_in_new" round></q-btn>
     </q-card-section>
   </q-card>
 </q-pull-to-refresh>
@@ -89,13 +89,13 @@
       direction="up"
       color="white text-blue"
     >
-    <q-chip @click.native="onClick" color="green-4" style="height: max-content;">
+    <q-chip color="green-4" style="height: max-content;">
       <q-fab-action @click="onClick" color="white text-green" icon="exit_to_app" />
       <span class="text-overline text-white">EXIT</span>
     </q-chip>
     <q-chip color="green-4" style="height: max-content;">
-      <q-fab-action @click="onClick" color="white text-green" icon="settings" />
-      <span class="text-overline text-white">SETTINGS</span>
+      <q-fab-action @click="showWalletViewEtc = true" color="white text-green" icon="account_balance_wallet" />
+      <span class="text-overline text-white">Wallet</span>
     </q-chip>
     <q-chip color="green-4" style="height: max-content;">
       <q-fab-action @click="makeTxs('SELL')" color="white text-red" icon="money_off" />
@@ -153,6 +153,74 @@
         </q-card-section>
     </q-card>
   </q-dialog>
+ <q-dialog
+      v-model="showWalletViewEtc"
+      persistent
+      maximized
+      transition-show="slide-up"
+      transition-hide="slide-down"
+    >
+      <q-card class="bg-white text-blue-9">
+        <q-bar class="bg-white">
+          <q-space />
+          <q-btn dense flat icon="close" v-close-popup>
+            <q-tooltip content-class="bg-white text-primary">Close</q-tooltip>
+          </q-btn>
+        </q-bar>
+      <div v-if="walletSaved">
+        <q-card-section>
+          <div class="text-h6 row justify-center">ETC Wallet
+            </div>
+        </q-card-section>
+        <q-card-section align="center">
+          <span class="text-red">Address (Please store it yourself safely)</span>
+        <q-input id="wallet-account" standout @click.native="copyText('wallet-account')" v-model="walletSaved.signingKey.address" readonly>
+        <template v-slot:prepend>
+          <q-icon name="file_copy" />
+        </template>
+        </q-input>
+        <div class="row justify-center q-ma-sm">
+         <q-btn class="text-blue-6 bg-white" @click="openExplorer('ETC')" round icon="launch" />
+        </div>
+        </q-card-section>
+        <q-card-section align="center">
+          <span class="text-red">Public Key (Please store it yourself safely)</span>
+        <q-input id="wallet-public" standout v-model="walletSaved.signingKey.publicKey" @click.native="copyText('wallet-public')" readonly>
+        <template v-slot:prepend>
+          <q-icon name="file_copy" />
+        </template>
+        </q-input>
+        </q-card-section>
+      <q-card-section align="center">
+        <span class="text-red">Private Key (Please store it yourself safely)</span>
+        <q-input id="wallet-private" standout v-model="walletSaved.signingKey.privateKey" @click.native="copyText('wallet-private')" :type="isPwd ? 'password' : 'text'" readonly>
+        <template v-slot:prepend>
+          <q-icon name="file_copy" />
+        </template>
+        </q-input>
+        </q-card-section>
+        <q-card-section align="center">
+        <q-btn round color="green-9" @click="isPwd = !isPwd">
+          <q-icon
+            :name="isPwd ? 'visibility_off' : 'visibility'"
+            class="cursor-pointer text-white"
+          />
+          </q-btn>
+        </q-card-section>
+        <q-card-section align="center" v-if="isRegistered">
+        <span class="text-red">P3C Crop Address (Please store it yourself safely)</span>
+        <q-input id="wallet-p3c" standout v-model="p3cCropAddress" @click.native="copyText('wallet-p3c')" readonly>
+        <template v-slot:prepend>
+          <q-icon name="file_copy" />
+        </template>
+        </q-input>
+        <div class="row justify-center q-ma-sm">
+         <q-btn class="text-green bg-white" @click="openExplorer('P3C')" round icon="launch" />
+        </div>
+        </q-card-section>
+        </div>
+      </q-card>
+    </q-dialog>
 </q-page>
 </template>
 
@@ -170,7 +238,7 @@ export default {
       etcBalance: '',
       p3cDividends: '',
       valueToSpend: '0.01',
-      walletSaved: this.$q.localStorage.getItem('wallet'),
+      walletSaved: null,
       privateKey: null,
       walletToGet: null,
       contractWithSigner: null,
@@ -187,11 +255,21 @@ export default {
       getDynBalance: null,
       sendingP3C: false,
       p3cReceiver: '',
-      showHistoryDialog: false
+      showHistoryDialog: false,
+      showWalletViewEtc: true,
+      isPwd: true,
+      p3cCropAddress: ''
     }
   },
   mounted () {
-    window.StatusBar.backgroundColorByHexString('#ffffff')
+    // ETC Wallet
+    if (this.$q.localStorage.getItem('wallet')) {
+      this.walletSaved = this.$q.localStorage.getItem('wallet')
+      console.log(this.walletSaved)
+    }
+    if (this.$q.platform.is.cordova) {
+      window.StatusBar.backgroundColorByHexString('#ffffff')
+    }
     if (this.$q.localStorage.getItem('historyTrxs')) {
       this.historyTransactions = this.$q.localStorage.getItem('historyTrxs')
       console.log(this.historyTransactions)
@@ -251,6 +329,7 @@ export default {
         this.isRegistered = true
         this.btnSpentEtcText = 'Buy P3C'
         this.$q.localStorage.set('cropAddress', cropAddress)
+        this.p3cCropAddress = cropAddress
         // console.log(cropAddress)
         let cropAbi = new this.$ethers.Contract(cropAddress, this.$contracts.crop.abi, this.$etcProvider)
         this.cropAbi = cropAbi.connect(this.walletToGet)
@@ -545,6 +624,34 @@ export default {
     },
     shareCropAddress () {
 
+    },
+    async copyText (txt) {
+      let copyTextarea = document.querySelector(`#${txt}`)
+      if (copyTextarea.type !== 'text') {
+        this.$q.notify({
+          color: 'primary',
+          message: 'Please make it visible first!'
+        })
+        return
+      }
+      // copyTextarea.setAttribute('type', 'text')
+      // console.log(copyTextarea)
+      copyTextarea.disabled = false
+      copyTextarea.focus()
+      copyTextarea.select()
+      try {
+        var successful = await document.execCommand('copy')
+        // console.log(successful)
+        var msg = successful ? 'to clipboard!' : 'unsuccessfully'
+        this.$q.notify({
+          color: 'green',
+          message: 'Value copied ' + msg
+        })
+      } catch (err) {
+        alert('Oops, unable to copy')
+      } finally {
+        copyTextarea.disabled = true
+      }
     }
   }
 }
