@@ -7,8 +7,8 @@
   <q-dialog v-model="openCreateCropEtcValueToSpentDialog" persistent>
     <q-card>
       <q-card-section>
-        <div class="text-h6">Available Balance {{etcBalance}}</div>
-        <div class="text-caption">Max Fee <span class="text-red">0.000023</span> ETC</div>
+        <div class="text-h6">Available {{typeBalance}} {{getDynBalance}}</div>
+        <div class="text-caption">Max Fee <span class="text-red">0.001200011</span> ETC</div>
       </q-card-section>
       <q-form
         @submit="onSubmit"
@@ -16,66 +16,59 @@
         class="q-gutter-md"
       >
       <q-card-section>
-        <q-input dense v-model="etcToSpent" type="number" step="0.01" min="0.01" autofocus @keyup.enter="openCreateCropEtcValueToSpentDialog = false"
+        <q-input dense v-model="valueToSpend" type="number" step="0.01" min="0.01" autofocus @keyup.enter="openCreateCropEtcValueToSpentDialog = false"
         lazy-rules
         :rules="[
           val => val !== null && val !== '' || 'Please type something',
-          val => val >= 0.01 || 'Please keep atleast 0.05 to buy p3c worth of that much ETC',
-          val => val <= this.etcBalance || 'That much ETC are not available'
+          val => val >= 0.01 || 'Please keep atleast 0.01 as Amount',
+          val => val <= this.getDynBalance || 'That much Amount is not available'
         ]"
       />
       </q-card-section>
 
       <q-card-actions align="right" class="text-primary">
         <q-btn class="text-green" flat label="Cancel" v-close-popup />
-        <q-btn class="text-white bg-green" label="Create Crop" type="submit" />
+        <q-btn class='text-white' :color="spendEtcBtnColor" :label="btnSpentEtcText" type="submit" />
       </q-card-actions>
       </q-form>
-    </q-card>
-  </q-dialog>
-  <q-dialog persistent v-model='dialog' position='top'>
-    <q-card style='width: 500px'>
-      <q-card-section class='row items-center no-wrap'>
-        <div style='width: 90vw'>
-          <q-input class='justify-center' filled v-model='text' label='Username' />
-        </div>
-        <q-space />
-        <q-btn round icon='done' class='text-blue q-ml-sm' close-popup @click='findUser()' />
-        <q-btn round icon='close' class='text-blue q-ml-sm' close-popup @click='dialog=false' />
-      </q-card-section>
     </q-card>
   </q-dialog>
   <div class='justify-center' align='center'>
     <span class='text-h5 text-white text-weight-bold'>{{user}}</span>
   </div>
+<q-pull-to-refresh v-if='isRegistered' @refresh="refresh">
   <q-card bordered>
-
     <q-card-section v-if='isRegistered'>
       <span class='text-h6 text-weight-light text-green'>P3C Balance:</span> {{p3cBalance}}
       <!-- Show button to buy p3c with etc if balance is zero -->
     </q-card-section>
-    <q-separator inset v-if='isRegistered' />
+      <q-separator inset v-if='isRegistered' />
     <q-card-section v-if='isRegistered'>
       <span class='text-h6 text-weight-light text-green'>IN ETC:</span> {{p3cBalanceInEtc}}
     </q-card-section>
-    <q-separator inset v-if='isRegistered' />
+      <q-separator inset v-if='isRegistered' />
     <q-card-section v-if='isRegistered'>
       <span class='text-h6 text-weight-light text-green'>IN USD:</span> ${{p3cBalanceInUsd}}
     </q-card-section>
-    <q-separator inset v-if='isRegistered' />
+      <q-separator inset v-if='isRegistered' />
     <q-card-section>
       <span class='text-h6 text-weight-light text-blue'>ETC:</span> {{etcBalance}}
     </q-card-section>
   </q-card>
+</q-pull-to-refresh>
   <div class="row justify-center" v-if="etcBalance <= 0">
     <q-btn rounded class="bg-red-8 text-white text-overline q-ma-sm" label="Deposit ETC" />
   </div>
   <div v-if='isRegistered'>
   <q-page-sticky position='bottom-left' :offset='[18, 18]'>
-    <q-btn fab-mini icon='arrow_upward' class='bg-green text-white' @click='dialog=true' />
+    <q-btn fab-mini icon='arrow_upward' class='bg-green text-white' @click='dialog = true' >
+      <q-badge color="green" class="q-ma-sm">Accept</q-badge>
+    </q-btn>
   </q-page-sticky>
   <q-page-sticky position='bottom-right' :offset='[18, 18]'>
-    <q-btn fab-mini icon='arrow_downward' class='bg-red text-white' @click='dialog=true' />
+    <q-btn fab-mini icon='arrow_downward' class='bg-red text-white' @click='dialog=true'>
+      <q-badge color="red" class="q-ma-sm">Send</q-badge>
+    </q-btn>
   </q-page-sticky>
   </div>
   <q-page-sticky position="bottom" :offset="[18, 18]" v-if='isRegistered'>
@@ -87,19 +80,27 @@
     <q-chip @click.native="onClick" color="green-4" style="height: max-content;">
       <q-fab-action @click="onClick" color="white text-green" icon="exit_to_app" />
       <span class="text-overline text-white">EXIT</span>
-      </q-chip>
+    </q-chip>
     <q-chip color="green-4" style="height: max-content;">
       <q-fab-action @click="onClick" color="white text-green" icon="settings" />
       <span class="text-overline text-white">SETTINGS</span>
-      </q-chip>
+    </q-chip>
     <q-chip color="green-4" style="height: max-content;">
-      <q-fab-action @click="onClick" color="white text-red" icon="money_off" />
+      <q-fab-action @click="makeTxs('SELL')" color="white text-red" icon="money_off" />
       <span class="text-overline text-white">SELL</span>
-      </q-chip>
+    </q-chip>
     <q-chip color="green-4" style="height: max-content;">
-      <q-fab-action @click="onClick" color="white text-green" icon="attach_money" />
+      <q-fab-action @click="makeTxs('BUY')" color="white text-green" icon="attach_money" />
       <span class="text-overline text-white">BUY</span>
-      </q-chip>
+    </q-chip>
+    <q-chip color="green-4" style="height: max-content;">
+      <q-fab-action @click="onClick" color="white text-green" icon="history" />
+      <span class="text-overline text-white">History</span>
+    </q-chip>
+    <q-chip color="green-4" style="height: max-content;">
+      <q-fab-action @click="onClick" color="white text-green" icon="open_in_new" />
+      <span class="text-overline text-white">Explorer</span>
+    </q-chip>
     </q-fab>
   </q-page-sticky>
 </q-page>
@@ -117,7 +118,7 @@ export default {
       p3cBalanceInEtc: '',
       p3cBalanceInUsd: '',
       etcBalance: '',
-      etcToSpent: '0.01',
+      valueToSpend: '0.01',
       walletSaved: this.$q.localStorage.getItem('wallet'),
       privateKey: null,
       walletToGet: null,
@@ -125,17 +126,27 @@ export default {
       address: null,
       isRegistered: false,
       overrides: null,
-      openCreateCropEtcValueToSpentDialog: false
+      openCreateCropEtcValueToSpentDialog: false,
+      farmContractWithSigner: null,
+      contractAbiWithSigner: null,
+      btnSpentEtcText: 'Create Crop',
+      historyTransactions: [],
+      spendEtcBtnColor: 'green',
+      typeBalance: null,
+      getDynBalance: null
     }
   },
   mounted () {
+    if (this.$q.localStorage.getItem('historyTrxs')) {
+      this.historyTransactions = this.$q.localStorage.getItem('historyTrxs')
+    }
     this.$q.loading.show()
     if (!this.$q.localStorage.getItem('overrides') || this.$q.localStorage.getItem('overrides') === null) {
-      let wei = this.$ethers.utils.parseEther(this.etcToSpent)
+      let wei = this.$ethers.utils.parseEther(this.valueToSpend)
       let feeWei = this.$ethers.utils.parseUnits('1.0', 'gwei')
       this.overrides = {
         // The maximum units of gas for the transaction to use
-        gasLimit: 150000,
+        gasLimit: 1200011,
         // The price (in wei) per unit of gas
         gasPrice: feeWei._hex,
         // The nonce to use in the transaction
@@ -147,13 +158,13 @@ export default {
       }
       this.$q.localStorage.set('overrides', this.overrides)
       let etherString = this.$ethers.utils.formatEther(this.overrides.value)
-      this.etcToSpent = parseFloat(etherString).toFixed(2).toString()
+      this.valueToSpend = parseFloat(etherString).toFixed(2).toString()
     } else {
-      console.log('else')
-      console.log(this.$q.localStorage.getItem('overrides'))
+      // console.log('else')
+      // console.log(this.$q.localStorage.getItem('overrides'))
       let etherString = this.$ethers.utils.formatEther(this.$q.localStorage.getItem('overrides').value)
-      this.etcToSpent = parseFloat(etherString).toFixed(2).toString()
-      console.log('elsed')
+      this.valueToSpend = parseFloat(etherString).toFixed(2).toString()
+      // console.log('elsed')
     }
     this.address = this.walletSaved.signingKey.address
     this.privateKey = this.walletSaved.signingKey.keyPair.privateKey
@@ -167,13 +178,25 @@ export default {
     this.getMyCrop()
   },
   methods: {
+    refresh (done) {
+      this.getcontractInfo()
+      this.getETCBalance()
+      setTimeout(() => {
+        done()
+      }, 2000)
+    },
     async getMyCrop () {
       let cropAddress = await this.farmContractWithSigner.myCrop()
       if (cropAddress === '0x0000000000000000000000000000000000000000') {
         this.isRegistered = false
+        this.btnSpentEtcText = 'Create Crop'
         this.getETCBalance()
       } else {
         this.isRegistered = true
+        this.btnSpentEtcText = 'Buy P3C'
+        this.$q.localStorage.set('cropAddress', cropAddress)
+        let cropAbi = new this.$ethers.Contract(cropAddress, this.$contracts.crop.abi, this.$etcProvider)
+        this.cropAbi = cropAbi.connect(this.walletToGet)
         this.getcontractInfo()
         this.getETCBalance()
       }
@@ -206,10 +229,19 @@ export default {
         let currentValue = await this.farmContractWithSigner.createCrop(this.$referrer, false, this.$q.localStorage.getItem('overrides'))
         this.$q.loading.hide()
         console.log(currentValue)
-        this.$q.notify({
-          message: 'The transaction is processing...',
-          color: 'green'
-        })
+        if (currentValue.hash) {
+          this.historyTransactions.push({ etcSpent: this.valueToSpend, hash: currentValue.hash })
+          this.$q.localStorage.set('historyTrxs', this.historyTransactions)
+          this.$q.notify({
+            message: 'Transaction Successful, Pull to refresh...',
+            color: 'green'
+          })
+        } else {
+          this.$q.notify({
+            message: 'A problem occured while sending transaction but check blockExplorer First.',
+            color: 'warning'
+          })
+        }
         this.openCreateCropEtcValueToSpentDialog = false
       } catch (err) {
         this.openCreateCropEtcValueToSpentDialog = false
@@ -220,15 +252,86 @@ export default {
         console.log(err)
       }
     },
+    async buyP3C () {
+      this.$q.loading.show()
+      this.openCreateCropEtcValueToSpentDialog = false
+      let boughtP3C = await this.cropAbi.buy(this.$referrer, this.$q.localStorage.getItem('overrides'))
+      console.log(boughtP3C)
+      if (boughtP3C.hash) {
+        this.historyTransactions.push({ etcSpent: this.valueToSpend, hash: boughtP3C.hash })
+        this.$q.localStorage.set('historyTrxs', this.historyTransactions)
+        this.$q.notify({
+          message: 'Transaction Successful, Pull to refresh...',
+          color: 'green'
+        })
+      } else {
+        this.$q.notify({
+          message: 'A problem occured while sending transaction but check blockExplorer First.',
+          color: 'warning'
+        })
+      }
+      this.$q.loading.hide()
+    },
+    async sellP3C () {
+      this.$q.loading.show()
+      this.openCreateCropEtcValueToSpentDialog = false
+      let sellingP3CAmount = this.$ethers.utils.parseEther(this.valueToSpend)
+      let feeWei = this.$ethers.utils.parseUnits('1.0', 'gwei')
+      let overrides = {
+        // The maximum units of gas for the transaction to use
+        gasLimit: 1200011,
+        // The price (in wei) per unit of gas
+        gasPrice: feeWei._hex,
+        // The nonce to use in the transaction
+        // The chain ID (or network ID) to use
+        chainId: 61
+      }
+      let soldP3C = await this.cropAbi.sell(sellingP3CAmount._hex, overrides)
+      console.log(soldP3C)
+      if (soldP3C.hash) {
+        this.historyTransactions.push({ etcSpent: this.valueToSpend, hash: soldP3C.hash })
+        this.$q.localStorage.set('historyTrxs', this.historyTransactions)
+        this.$q.notify({
+          message: 'Transaction Successful, Pull to refresh...',
+          color: 'green'
+        })
+      } else {
+        this.$q.notify({
+          message: 'A problem occured while sending transaction but check blockExplorer First.',
+          color: 'warning'
+        })
+      }
+      this.$q.loading.hide()
+    },
+    openBuyP3CDialog () {
+      this.openCreateCropEtcValueToSpentDialog = true
+    },
     onClick () {
       console.log('Clicked on a fab action')
     },
     openCreateCropModal () {
       this.openCreateCropEtcValueToSpentDialog = true
     },
+    setOvrride () {
+      let feeWei = this.$ethers.utils.parseUnits('1.0', 'gwei')
+      let valueWei = this.$ethers.utils.parseEther(this.valueToSpend)
+      this.overrides = {
+        // The maximum units of gas for the transaction to use
+        gasLimit: 1200011,
+        // The price (in wei) per unit of gas
+        gasPrice: feeWei._hex,
+        // The nonce to use in the transaction
+        // The amount to send with the transaction (i.e. msg.value)
+        value: valueWei._hex,
+        // The chain ID (or network ID) to use
+        chainId: 61
+      }
+      console.log(this.overrides)
+      this.$q.localStorage.set('overrides', this.overrides)
+    },
     onSubmit () {
       // #=> ETC Transfer
-      // let amount = this.$ethers.utils.parseEther(this.etcToSpent)
+      // let amount = this.$ethers.utils.parseEther(this.valueToSpend)
 
       // let tx = {
       //   to: '0x7474C6597FDe2675f3Dce76dEDB2ae93D1FfBbBB',
@@ -251,27 +354,40 @@ export default {
 
       // #=> Creating crop
       console.log('in submit')
-      // ask for fee in dialog
-      let feeWei = this.$ethers.utils.parseUnits('1.0', 'gwei')
-      let valueWei = this.$ethers.utils.parseEther(this.etcToSpent)
-      console.log(feeWei._hex, valueWei._hex)
-      this.overrides = {
-        // The maximum units of gas for the transaction to use
-        gasLimit: 1200011,
-        // The price (in wei) per unit of gas
-        gasPrice: feeWei._hex,
-        // The nonce to use in the transaction
-        // The amount to send with the transaction (i.e. msg.value)
-        value: valueWei._hex,
-        // The chain ID (or network ID) to use
-        chainId: 61
+      if (this.btnSpentEtcText === 'Create Crop') {
+        this.setOvrride()
+        this.createCrop()
+      } else if (this.btnSpentEtcText === 'Buy P3C') {
+        this.setOvrride()
+        this.buyP3C()
+      } else if (this.btnSpentEtcText === 'Sell P3C') {
+        this.setOvrride()
+        this.sellP3C()
       }
-      console.log(this.overrides)
-      this.$q.localStorage.set('overrides', this.overrides)
-      this.createCrop()
     },
     onReset () {
 
+    },
+    makeTxs (txsType) {
+      if (txsType === 'SELL') {
+        this.btnSpentEtcText = 'Sell P3C'
+        this.spendEtcBtnColor = 'red'
+        this.typeBalance = 'P3C'
+        this.getDynBalance = this.p3cBalance
+        this.openCreateCropEtcValueToSpentDialog = true
+      } else if (txsType === 'BUY') {
+        this.btnSpentEtcText = 'Buy P3C'
+        this.spendEtcBtnColor = 'green'
+        this.typeBalance = 'ETC'
+        this.getDynBalance = this.etcBalance
+        this.openCreateCropEtcValueToSpentDialog = true
+      } else if (txsType === 'CREATE') {
+        this.btnSpentEtcText = 'Create Crop'
+        this.spendEtcBtnColor = 'orange'
+        this.typeBalance = 'ETC'
+        this.getDynBalance = this.etcBalance
+        this.openCreateCropEtcValueToSpentDialog = true
+      }
     }
   }
 }

@@ -53,7 +53,9 @@ module.exports = function (ctx) {
         'QFab',
         'QFabAction',
         'QChip',
-        'QForm'
+        'QForm',
+        'QBadge',
+        'QPullToRefresh'
       ],
 
       directives: [
