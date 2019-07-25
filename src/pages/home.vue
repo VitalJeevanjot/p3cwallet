@@ -73,7 +73,7 @@
   </div>
   <div v-if='isRegistered'>
   <q-page-sticky position='bottom-left' :offset='[18, 18]'>
-    <q-btn fab-mini icon='arrow_upward' class='bg-green text-white' @click='dialog = true' >
+    <q-btn fab-mini icon='arrow_upward' class='bg-green text-white' @click="showOnlyP3CCropAddress = true" >
       <q-badge color="green" class="q-ma-sm">Accept</q-badge>
     </q-btn>
   </q-page-sticky>
@@ -221,6 +221,33 @@
         </div>
       </q-card>
     </q-dialog>
+
+    <q-dialog
+      v-model="showOnlyP3CCropAddress"
+      persistent
+      transition-show="slide-up"
+      transition-hide="slide-down"
+    >
+      <q-card class="bg-white text-blue-9">
+        <q-bar class="bg-white">
+          <q-space />
+          <q-btn dense flat icon="close" v-close-popup>
+            <q-tooltip content-class="bg-white text-primary">Close</q-tooltip>
+          </q-btn>
+        </q-bar>
+        <q-card-section align="center" v-if="isRegistered">
+        <span class="text-red">P3C Crop Address (Send it to the P3C sender to receive P3C)</span>
+        <q-input id="wallet-p3c" standout v-model="p3cCropAddress" @click.native="copyText('wallet-p3c')" readonly>
+        <template v-slot:prepend>
+          <q-icon name="file_copy" />
+        </template>
+        </q-input>
+        <div class="row justify-center q-ma-sm">
+         <q-btn class="text-green bg-white" @click="openExplorer('P3C')" round icon="launch" />
+        </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
 </q-page>
 </template>
 
@@ -256,9 +283,10 @@ export default {
       sendingP3C: false,
       p3cReceiver: '',
       showHistoryDialog: false,
-      showWalletViewEtc: true,
+      showWalletViewEtc: false,
       isPwd: true,
-      p3cCropAddress: ''
+      p3cCropAddress: '',
+      showOnlyP3CCropAddress: false
     }
   },
   mounted () {
@@ -627,6 +655,7 @@ export default {
     },
     async copyText (txt) {
       let copyTextarea = document.querySelector(`#${txt}`)
+      // console.log(copyTextarea)
       if (copyTextarea.type !== 'text') {
         this.$q.notify({
           color: 'primary',
