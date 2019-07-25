@@ -4,6 +4,11 @@
   <div class="row justify-center q-ma-sm">
     <q-btn @click="openCreateCropModal()" v-if="!isRegistered && this.etcBalance > 0" rounded class="bg-indigo-8 text-white text-overline q-ma-sm" label="Create Crop" />
   </div>
+  <q-page-sticky position='top-right' :offset='[18, 0]'>
+    <q-btn fab-mini icon='delete' class='bg-red text-white' @click="showInsertEncryptionPinDialog=true">
+      <q-badge color="red" class="q-ma-sm">Delete</q-badge>
+    </q-btn>
+  </q-page-sticky>
   <q-dialog v-model="openCreateCropEtcValueToSpentDialog" persistent>
     <q-card>
       <q-card-section>
@@ -44,7 +49,7 @@
   <div class='justify-center' align='center'>
     <span class='text-h5 text-white text-weight-bold'>{{user}}</span>
   </div>
-<q-pull-to-refresh v-if='isRegistered' @refresh="refresh">
+<q-pull-to-refresh @refresh="refresh">
   <q-card bordered>
     <q-card-section v-if='isRegistered'>
       <span class='text-h6 text-weight-light text-green'>P3C Dividends:</span> {{p3cDividends}}
@@ -68,8 +73,11 @@
     </q-card-section>
   </q-card>
 </q-pull-to-refresh>
-  <div class="row justify-center" v-if="etcBalance <= 0">
-    <q-btn rounded class="bg-red-8 text-white text-overline q-ma-sm" label="Deposit ETC" />
+  <div class="row justify-center" v-if="etcBalance <= 0 && decryptedData">
+    <q-btn rounded @click="showWalletViewEtc = true" class="bg-red-8 text-white text-overline q-ma-sm" label="Deposit ETC" />
+  </div>
+  <div class="row justify-center" v-if="!decryptedData">
+    <q-btn rounded to="/" class="bg-red-8 text-white text-overline q-ma-sm" label="Go Back" />
   </div>
   <div v-if='isRegistered'>
   <q-page-sticky position='bottom-left' :offset='[18, 18]'>
@@ -205,7 +213,7 @@
         </q-card-section>
         <q-card-section align="center" v-if="isRegistered">
         <span class="text-red">P3C Crop Address (Please store it yourself safely)</span>
-        <q-input id="wallet-p3c" standout v-model="p3cCropAddress" @click.native="copyText('wallet-p3c')" readonly>
+        <q-input id="wallet-p3c-a" standout v-model="p3cCropAddress" @click.native="copyText('wallet-p3c-a')" readonly>
         <template v-slot:prepend>
           <q-icon name="file_copy" />
         </template>
@@ -218,7 +226,7 @@
       </q-card>
     </q-dialog>
 
-    <q-dialog
+ <q-dialog
       v-model="showOnlyP3CCropAddress"
       persistent
       transition-show="slide-up"
@@ -244,6 +252,33 @@
         </q-card-section>
       </q-card>
     </q-dialog>
+<!-- Dialog for deleting account -->
+<q-dialog v-model="showInsertEncryptionPinDialog" persistent>
+  <q-card style="min-width: 300px">
+    <q-card-section>
+      <div class="text-h6 text-weight-light"> <q-icon color="red" name="warning" /> Deleting your account is irreversable, You sure you want to continue? Make sure you have saved your private key safe. Then enter your pin and click Delte My Accoun Button</div>
+    </q-card-section>
+
+    <q-card-section>
+      <q-form
+        @submit="onEncryption"
+        @reset="onReset"
+        class="q-gutter-md"
+      >
+      <q-input dense :rules="[val => val.length === 7 || 'Field is required']"
+         rounded outlined filled type="text"
+          v-model="encryptionPin" autofocus
+          mask= "#-#-#-#"
+          >
+      </q-input>
+      <q-card-actions align="right" class="text-primary">
+        <q-btn flat label="Close" v-close-popup />
+        <q-btn class="bg-primary text-white" label="Encrypt Wallet" type="submit" />
+    </q-card-actions>
+      </q-form>
+    </q-card-section>
+  </q-card>
+</q-dialog>
 </q-page>
 </template>
 
@@ -282,13 +317,31 @@ export default {
       showWalletViewEtc: false,
       isPwd: true,
       p3cCropAddress: '',
-      showOnlyP3CCropAddress: false
+      showOnlyP3CCropAddress: false,
+      decryptedData: null,
+      showInsertEncryptionPinDialog: false,
+      encryptionPin: ''
     }
   },
   mounted () {
     // ETC Wallet
-    if (this.$q.localStorage.getItem('wallet')) {
-      this.walletSaved = this.$q.localStorage.getItem('wallet')
+    // console.log(cipher)
+    if (!this.$q.localStorage.getItem('wallet')) {
+      this.$router.push('/')
+    }
+    var bytes = this.$cryptojs.AES.decrypt(this.$q.localStorage.getItem('wallet'), this.$q.sessionStorage.getItem('PinEnr'))
+    console.log(bytes)
+    if (bytes.sigBytes === 0) {
+      this.$q.notify({
+        color: 'red',
+        icon: 'warning',
+        message: 'Pin is not correct, Kindly go back and enter right pin.'
+      })
+    }
+    this.decryptedData = JSON.parse(bytes.toString(this.$cryptojs.enc.Utf8))
+    console.log(this.decryptedData)
+    if (this.decryptedData) {
+      this.walletSaved = this.decryptedData
     }
     if (this.$q.platform.is.cordova) {
       window.StatusBar.backgroundColorByHexString('#ffffff')
@@ -628,7 +681,7 @@ export default {
     },
     openExplorer (type) {
       if (type === 'ETC') {
-        let url = 'https://blockscout.com/etc/mainnet/address/' + this.$q.localStorage.getItem('wallet').signingKey.address
+        let url = 'https://blockscout.com/etc/mainnet/address/' + this.decryptedData.signingKey.address
         let win = window.open(url, '_blank')
         win.focus()
       } else {
@@ -672,6 +725,21 @@ export default {
         alert('Oops, unable to copy')
       } finally {
         copyTextarea.disabled = true
+      }
+    },
+    onEncryption () {
+      console.log(this.encryptionPin.length)
+      let pin = this.encryptionPin.trim().replace(/-/g, '')
+      if (this.$q.sessionStorage.getItem('PinEnr') === pin) {
+        this.$q.localStorage.clear()
+        this.$q.sessionStorage.clear()
+        this.$router.push('/')
+      } else {
+        this.showInsertEncryptionPinDialog = false
+        this.$q.notify({
+          color: 'red',
+          message: 'Wrong Pin, Do backup your wallet private key manually before deleting it.'
+        })
       }
     }
   }
