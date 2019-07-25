@@ -19,7 +19,14 @@
           "backgroundColor": "#fffbe8"
         }
       },
-      "build": {}
+      "build": {
+        "cordova": {
+          "iconHash": "864d925346c82deb803c87ef14e6fc4a",
+          "splashscreenHash": false,
+          "splashscreenType": "generate",
+          "backgroundColor": "#fffbe8"
+        }
+      }
     }
   }
 }
