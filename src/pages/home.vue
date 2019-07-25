@@ -342,6 +342,12 @@ export default {
     console.log(this.decryptedData)
     if (this.decryptedData) {
       this.walletSaved = this.decryptedData
+    } else {
+      this.$q.notify({
+        color: 'red',
+        icon: 'warning',
+        message: 'Pin is not correct, Kindly go back and enter right pin.'
+      })
     }
     if (this.$q.platform.is.cordova) {
       window.StatusBar.backgroundColorByHexString('#ffffff')
