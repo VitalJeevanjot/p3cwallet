@@ -331,14 +331,13 @@ export default {
     }
     var bytes = this.$cryptojs.AES.decrypt(this.$q.localStorage.getItem('wallet'), this.$q.sessionStorage.getItem('PinEnr'))
     console.log(bytes)
-    if (bytes.sigBytes === 0) {
-      this.$q.notify({
-        color: 'red',
-        icon: 'warning',
-        message: 'Pin is not correct, Kindly go back and enter right pin.'
-      })
+    this.$q.loading.hide()
+    try {
+      this.decryptedData = JSON.parse(bytes.toString(this.$cryptojs.enc.Utf8))
+    } catch (err) {
+      console.log(err)
+      this.$q.loading.hide()
     }
-    this.decryptedData = JSON.parse(bytes.toString(this.$cryptojs.enc.Utf8))
     console.log(this.decryptedData)
     if (this.decryptedData) {
       this.walletSaved = this.decryptedData
@@ -348,6 +347,8 @@ export default {
         icon: 'warning',
         message: 'Pin is not correct, Kindly go back and enter right pin.'
       })
+      this.$q.loading.hide()
+      return
     }
     if (this.$q.platform.is.cordova) {
       window.StatusBar.backgroundColorByHexString('#ffffff')
