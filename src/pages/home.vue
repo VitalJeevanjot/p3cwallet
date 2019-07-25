@@ -289,7 +289,6 @@ export default {
     // ETC Wallet
     if (this.$q.localStorage.getItem('wallet')) {
       this.walletSaved = this.$q.localStorage.getItem('wallet')
-      console.log(this.walletSaved)
     }
     if (this.$q.platform.is.cordova) {
       window.StatusBar.backgroundColorByHexString('#ffffff')
