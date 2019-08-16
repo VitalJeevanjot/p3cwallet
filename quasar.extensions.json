@@ -28,6 +28,9 @@
         },
         "electron": {
           "iconHash": "864d925346c82deb803c87ef14e6fc4a"
+        },
+        "pwa": {
+          "iconHash": "864d925346c82deb803c87ef14e6fc4a"
         }
       }
     }

@@ -2,10 +2,10 @@
 <q-page padding>
   <!-- style='background-image: linear-gradient(white, #00bbff);' -->
   <div class="row justify-center q-ma-sm">
-    <q-btn @click="openCreateCropModal()" v-if="!isRegistered && this.etcBalance > 0" rounded class="bg-indigo-8 text-white text-overline q-ma-sm" label="Create Crop" />
+    <q-btn style="cursor: pointer;" @click="openCreateCropModal()" v-if="!isRegistered && this.etcBalance > 0" rounded class="bg-indigo-8 text-white text-overline q-ma-sm" label="Create Crop" />
   </div>
   <q-page-sticky position='top-right' :offset='[18, 0]' style="z-index: 1">
-    <q-btn fab-mini icon='delete' class='bg-orange-4 text-white' @click="showInsertEncryptionPinDialog=true">
+    <q-btn style="cursor: pointer;" fab-mini icon='delete' class='bg-orange-4 text-white' @click="showInsertEncryptionPinDialog=true">
       <q-badge color="orange" class="q-ma-sm">Delete</q-badge>
     </q-btn>
   </q-page-sticky>
@@ -40,8 +40,8 @@
       </q-card-section>
 
       <q-card-actions align="right" class="text-primary">
-        <q-btn class="text-green" flat label="Cancel" v-close-popup />
-        <q-btn class='text-white' :color="spendEtcBtnColor" :label="btnSpentEtcText" type="submit" />
+        <q-btn style="cursor: pointer;" class="text-green" flat label="Cancel" v-close-popup />
+        <q-btn style="cursor: pointer;" class='text-white' :color="spendEtcBtnColor" :label="btnSpentEtcText" type="submit" />
       </q-card-actions>
       </q-form>
     </q-card>
@@ -53,7 +53,7 @@
   <q-card bordered>
     <q-card-section v-if='isRegistered'>
       <span class='text-h6 text-weight-light text-green'>P3C Dividends:</span> {{p3cDividends}}
-      <q-btn v-if="p3cDividends > 0" class="q-ml-sm text-white bg-green-6" icon="get_app" round @click="withdrawDividendsP3C()"></q-btn>
+      <q-btn style="cursor: pointer;" v-if="p3cDividends > 0" class="q-ml-sm text-white bg-green-6" icon="get_app" round @click="withdrawDividendsP3C()"></q-btn>
     </q-card-section>
     <q-card-section v-if='isRegistered'>
       <span class='text-h6 text-weight-light text-green'>P3C Balance:</span> {{p3cBalance}}
@@ -69,24 +69,24 @@
       <q-separator inset v-if='isRegistered' />
     <q-card-section>
       <span class='text-h6 text-weight-light text-blue'>ETC:</span> {{etcBalance}}
-      <q-btn class="q-ml-sm text-white bg-grey-6" @click="openExplorer('ETC')" icon="open_in_new" round></q-btn>
+      <q-btn style="cursor: pointer;" class="q-ml-sm text-white bg-grey-6" @click="openExplorer('ETC')" icon="open_in_new" round></q-btn>
     </q-card-section>
   </q-card>
 </q-pull-to-refresh>
   <div class="row justify-center" v-if="etcBalance <= 0 && decryptedData">
-    <q-btn rounded @click="showWalletViewEtc = true" class="bg-red-8 text-white text-overline q-ma-sm" label="Deposit ETC" />
+    <q-btn style="cursor: pointer;" rounded @click="showWalletViewEtc = true" class="bg-red-8 text-white text-overline q-ma-sm" label="Deposit ETC" />
   </div>
   <div class="row justify-center" v-if="!decryptedData">
-    <q-btn rounded to="/" class="bg-red-8 text-white text-overline q-ma-sm" label="Go Back" />
+    <q-btn style="cursor: pointer;" rounded to="/" class="bg-red-8 text-white text-overline q-ma-sm" label="Go Back" />
   </div>
   <div v-if='isRegistered'>
   <q-page-sticky position='bottom-left' :offset='[18, 18]'>
-    <q-btn fab-mini icon='arrow_upward' class='bg-green text-white' @click="showOnlyP3CCropAddress = true" >
+    <q-btn style="cursor: pointer;" fab-mini icon='arrow_upward' class='bg-green text-white' @click="showOnlyP3CCropAddress = true" >
       <q-badge color="green" class="q-ma-sm">Accept</q-badge>
     </q-btn>
   </q-page-sticky>
   <q-page-sticky position='bottom-right' :offset='[18, 18]'>
-    <q-btn fab-mini icon='arrow_downward' class='bg-red text-white' @click="makeTxs('SEND')">
+    <q-btn style="cursor: pointer;" fab-mini icon='arrow_downward' class='bg-red text-white' @click="makeTxs('SEND')">
       <q-badge color="red" class="q-ma-sm">Send</q-badge>
     </q-btn>
   </q-page-sticky>
@@ -128,7 +128,7 @@
       transition-hide="slide-down"
     >
     <q-card class="bg-grey-2 text-green-9">
-      <q-btn dense flat icon="close" v-close-popup>
+      <q-btn style="cursor: pointer;" dense flat icon="close" v-close-popup>
         <q-tooltip content-class="bg-white text-primary">Close</q-tooltip>
       </q-btn>
       <q-card-section>
@@ -148,7 +148,7 @@
           <td class="text-right" v-if="txs.inP3C">P3C</td>
           <td class="text-right" v-if="!txs.inP3C">ETC</td>
           <td >
-           <q-btn round class="text-green-5 bg-grey-1" icon="open_in_new" @click="openHashTxs(txs.hash)">
+           <q-btn style="cursor: pointer;" round class="text-green-5 bg-grey-1" icon="open_in_new" @click="openHashTxs(txs.hash)">
            </q-btn>
           </td>
         </tr>
@@ -167,7 +167,7 @@
       <q-card class="bg-white text-blue-9">
         <q-bar class="bg-white">
           <q-space />
-          <q-btn dense flat icon="close" v-close-popup>
+          <q-btn style="cursor: pointer;" dense flat icon="close" v-close-popup>
             <q-tooltip content-class="bg-white text-primary">Close</q-tooltip>
           </q-btn>
         </q-bar>
@@ -184,7 +184,7 @@
         </template>
         </q-input>
         <div class="row justify-center q-ma-sm">
-         <q-btn class="text-blue-6 bg-white" @click="openExplorer('ETC')" round icon="launch" />
+         <q-btn style="cursor: pointer;" class="text-blue-6 bg-white" @click="openExplorer('ETC')" round icon="launch" />
         </div>
         </q-card-section>
         <q-card-section align="center">
@@ -204,7 +204,7 @@
         </q-input>
         </q-card-section>
         <q-card-section align="center">
-        <q-btn round color="green-9" @click="isPwd = !isPwd">
+        <q-btn style="cursor: pointer;" round color="green-9" @click="isPwd = !isPwd">
           <q-icon
             :name="isPwd ? 'visibility_off' : 'visibility'"
             class="cursor-pointer text-white"
@@ -219,7 +219,7 @@
         </template>
         </q-input>
         <div class="row justify-center q-ma-sm">
-         <q-btn class="text-green bg-white" @click="openExplorer('P3C')" round icon="launch" />
+         <q-btn style="cursor: pointer;" class="text-green bg-white" @click="openExplorer('P3C')" round icon="launch" />
         </div>
         </q-card-section>
         </div>
@@ -235,7 +235,7 @@
       <q-card class="bg-white text-blue-9">
         <q-bar class="bg-white">
           <q-space />
-          <q-btn dense flat icon="close" v-close-popup>
+          <q-btn style="cursor: pointer;" dense flat icon="close" v-close-popup>
             <q-tooltip content-class="bg-white text-primary">Close</q-tooltip>
           </q-btn>
         </q-bar>
@@ -247,7 +247,7 @@
         </template>
         </q-input>
         <div class="row justify-center q-ma-sm">
-         <q-btn class="text-green bg-white" @click="openExplorer('P3C')" round icon="launch" />
+         <q-btn style="cursor: pointer;" class="text-green bg-white" @click="openExplorer('P3C')" round icon="launch" />
         </div>
         </q-card-section>
       </q-card>
@@ -272,8 +272,8 @@
       >
       </q-input>
       <q-card-actions align="right" class="text-primary">
-        <q-btn flat label="Close" v-close-popup />
-        <q-btn class="bg-primary text-white" label="Encrypt Wallet" type="submit" />
+        <q-btn style="cursor: pointer;" flat label="Close" v-close-popup />
+        <q-btn style="cursor: pointer;" class="bg-primary text-white" label="Encrypt Wallet" type="submit" />
     </q-card-actions>
       </q-form>
     </q-card-section>
