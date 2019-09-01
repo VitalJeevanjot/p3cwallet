@@ -1,19 +1,19 @@
 <template>
   <q-page class="bg-white">
     <div class="row justify-center q-mt-sm">
-      <q-btn class="text-blue-5 q-mt-md" style="width:80vw; cursor: pointer;" @click="createAccount()" outline align="left" rounded icon="add_circle_outline" label="Create new account" />
+      <q-btn class="text-blue-5 q-mt-md" style="width:80vw; cursor: pointer; max-width: 500px;" @click="createAccount()" outline align="left" rounded icon="add_circle_outline" label="Create new account" />
     </div>
     <div class="row justify-center q-mt-md">
-      <q-btn class="text-blue-5" style="width:80vw; cursor: pointer;" @click="importAccountDialog=true" outline rounded align="left" icon="account_circle" label="Import old account" />
+      <q-btn class="text-blue-5" style="width:80vw; cursor: pointer; max-width: 500px;" @click="importAccountDialog=true" outline rounded align="left" icon="account_circle" label="Import old account" />
     </div>
     <div class="row justify-center q-mt-xl">
-      <q-btn class="text-green-5 q-mt-md" style="width:60vw; cursor: pointer;" @click="openUrl('https://forum.saturn.network/t/tutorial-how-to-recieve-a-p3c-io-airdrop-on-your-phone-5-minute-tutorial/4144')" outline rounded align="left" icon="info_outline" label="Help Airdrop" />
+      <q-btn class="text-green-5 q-mt-md" style="width:60vw; cursor: pointer; max-width: 400px;" @click="openUrl('https://forum.saturn.network/t/tutorial-how-to-recieve-a-p3c-io-airdrop-on-your-phone-5-minute-tutorial/4144')" outline rounded align="left" icon="info_outline" label="Help Airdrop" />
     </div>
     <div class="row justify-center q-mt-sm">
-      <q-btn class="text-green-5" style="width:60vw; cursor: pointer;" @click="openUrl('https://p3c.io/use.html')" outline rounded align="left" icon="info_outline" label="P3C Website" />
+      <q-btn class="text-green-5" style="width:60vw; cursor: pointer; max-width: 400px;" @click="openUrl('https://p3c.io/use.html')" outline rounded align="left" icon="info_outline" label="P3C Website" />
     </div>
     <div class="row justify-center q-mt-sm">
-      <q-btn class="text-green-5" style="width:60vw; cursor: pointer;" @click="openUrl('http://p3c.trade/')" outline rounded align="left" icon="info_outline" label="P3C Trade" />
+      <q-btn class="text-green-5" style="width:60vw; cursor: pointer; max-width: 400px;" @click="openUrl('http://p3c.trade/')" outline rounded align="left" icon="info_outline" label="P3C Trade" />
     </div>
 
     <q-dialog v-model="importAccountDialog" persistent>
