@@ -12,7 +12,7 @@
   <q-dialog v-model="openCreateCropEtcValueToSpentDialog" persistent>
     <q-card>
       <q-card-section>
-        <div class="text-h6">Available {{typeBalance}} {{getDynBalance}}</div>
+        <div class="text-h6">Available <span class="text-green" v-if="typeBalance == 'P3C'"> {{typeBalance}} </span> <span class="text-blue" v-if="typeBalance == 'ETC' || typeBalance == 'etc'"> {{typeBalance}} </span> {{getDynBalance}}</div>
         <div class="text-caption">Max Fee <span class="text-red">0.001200011</span> ETC</div>
       </q-card-section>
       <q-form
@@ -29,12 +29,12 @@
       />
       </q-card-section>
       <q-card-section>
-        <q-input dense v-model="valueToSpend" label="Amount" type="number" step="0.01" min="0.01" autofocus
+        <q-input dense v-model="valueToSpend" label="Amount" type="number" step="0.0001" min="0.0001" autofocus
         lazy-rules
         :rules="[
           val => val !== null && val !== '' || 'Please type something',
-          val => val >= 0.01 || 'Please keep atleast 0.01 as Amount',
-          val => val <= this.getDynBalance || 'That much Amount is not available'
+          val => val >= 0.0001 || 'Please keep atleast 0.0001 as Amount',
+          val => val < this.getDynBalance || 'That much Amount is not available'
         ]"
       />
       </q-card-section>
@@ -465,10 +465,11 @@ export default {
       } catch (err) {
         this.openCreateCropEtcValueToSpentDialog = false
         this.$q.notify({
-          message: err,
+          message: 'Problem making transaction, Possible error: Insufficient funds, Check logs to get proper info to report.',
           color: 'red'
         })
-        console.log(err)
+        this.$q.loading.hide()
+        console.error(err)
       }
     },
     async buyP3C () {
@@ -571,7 +572,16 @@ export default {
         // The chain ID (or network ID) to use
         chainId: 61
       }
-      let sentP3C = await this.cropAbi.transfer(this.p3cReceiver.trim(), sendingP3CAmount._hex, overrides)
+      let sentP3C
+      try {
+        sentP3C = await this.cropAbi.transfer(this.p3cReceiver.trim(), sendingP3CAmount._hex, overrides)
+      } catch (err) {
+        this.$q.notify({
+          message: 'A problem occured while making this transaction.',
+          color: 'warning'
+        })
+        this.$q.loading.hide()
+      }
       console.log(sentP3C)
       if (sentP3C.hash) {
         this.historyTransactions.push({ type: 'Sent P3C', inP3C: true, etcSpent: this.valueToSpend, hash: sentP3C.hash })
@@ -590,9 +600,12 @@ export default {
     },
     openBuyP3CDialog () {
       this.openCreateCropEtcValueToSpentDialog = true
+      this.getDynBalance = this.etcBalance
     },
     openCreateCropModal () {
       this.openCreateCropEtcValueToSpentDialog = true
+      this.getDynBalance = this.etcBalance
+      this.typeBalance = 'ETC'
     },
     setOvrride () {
       let feeWei = this.$ethers.utils.parseUnits('1.0', 'gwei')

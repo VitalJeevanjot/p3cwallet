@@ -141,7 +141,16 @@ export default {
       }
       // ask permission that saved wallet will be deleted
       let privateKey = this.privatekey
-      let wallet = new this.$ethers.Wallet(privateKey)
+      let wallet
+      try {
+        wallet = new this.$ethers.Wallet(privateKey)
+      } catch (err) {
+        this.$q.notify({
+          color: 'red',
+          message: 'Problem adding this private key.'
+        })
+        return
+      }
       let cipher = await this.$cryptojs.AES.encrypt(JSON.stringify(wallet), this.$q.sessionStorage.getItem('PinEnr')).toString()
       this.$q.localStorage.set('wallet', cipher)
       // let walletWithProvider = new this.$ethers.Wallet(privateKey, this.$etcProvider)
