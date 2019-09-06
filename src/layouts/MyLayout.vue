@@ -4,8 +4,11 @@
       <q-toolbar align="center">
           <q-avatar style=" display: block;
             margin-left: auto;
-            margin-right: auto;">
-            <img src="statics/whale.png">
+            margin-right: auto;"
+            class = "bg-grey-11 q-mt-sm"
+            size="72px"
+            >
+            <img style="height: 50px; width: 50px" src="statics/whale.png">
           </q-avatar>
       </q-toolbar>
     </q-header>

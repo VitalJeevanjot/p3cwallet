@@ -52,11 +52,11 @@
 <q-pull-to-refresh @refresh="refresh">
   <q-card bordered>
     <q-card-section v-if='isRegistered'>
-      <span class='text-h6 text-weight-light text-green'>P3C Dividends:</span> {{p3cDividends}}
+      <span class='text-h6 text-weight-light text-green'>My P3C Dividends:</span> {{p3cDividends}} <span class="text-overline text-grey-7"> (in compound mode) </span>
       <q-btn style="cursor: pointer;" v-if="p3cDividends > 0" class="q-ml-sm text-white bg-green-6" icon="get_app" round @click="withdrawDividendsP3C()"></q-btn>
     </q-card-section>
     <q-card-section v-if='isRegistered'>
-      <span class='text-h6 text-weight-light text-green'>P3C Balance:</span> {{p3cBalance}}
+      <span class='text-h6 text-weight-light text-green'>My P3C Balance:</span> {{p3cBalance}}
     </q-card-section>
       <q-separator inset v-if='isRegistered' />
     <q-card-section v-if='isRegistered'>
@@ -79,6 +79,7 @@
   <div class="row justify-center" v-if="!decryptedData">
     <q-btn style="cursor: pointer;" rounded to="/" class="bg-red-8 text-white text-overline q-ma-sm" label="Go Back" />
   </div>
+  <line-chart :chart-data="datacollection"></line-chart>
   <div v-if='isRegistered'>
   <q-page-sticky position='bottom-left' :offset='[18, 18]'>
     <q-btn style="cursor: pointer;" fab-mini icon='arrow_upward' class='bg-green text-white' @click="showOnlyP3CCropAddress = true" >
@@ -281,8 +282,13 @@
 </template>
 
 <script>
+import LineChart from './LineChart.js'
+
 export default {
   name: 'home',
+  components: {
+    LineChart
+  },
   data () {
     return {
       dialog: false,
@@ -318,10 +324,23 @@ export default {
       showOnlyP3CCropAddress: false,
       decryptedData: null,
       showInsertEncryptionPinDialog: false,
-      encryptionPin: ''
+      encryptionPin: '',
+      datacollection: null,
+      chartDataFromApi: null,
+      chartDatesFromApi: [],
+      chartOpenPricesFromApi: []
     }
   },
   mounted () {
+    this.$axios.get('https://api.p3c.io/chart/ohlc').then((res) => {
+      this.chartDataFromApi = res.data
+      console.log(this.chartDataFromApi)
+      for (let index = 0; index < this.chartDataFromApi.length; index++) {
+        this.chartDatesFromApi.push(this.chartDataFromApi[index].Date)
+        this.chartOpenPricesFromApi.push(this.chartDataFromApi[index].Open)
+      }
+      this.fillData()
+    })
     // ETC Wallet
     // console.log(cipher)
     if (!this.$q.localStorage.getItem('wallet')) {
@@ -759,6 +778,24 @@ export default {
           message: 'Wrong Pin, Do backup your wallet private key manually before deleting it.'
         })
       }
+    },
+    fillData () {
+      this.datacollection = {
+        labels: this.chartDatesFromApi,
+        datasets: [
+          {
+            label: 'Open Price',
+            borderColor: '#49b86e',
+            borderWidth: 1,
+            fill: false,
+            pointRadius: 2,
+            data: this.chartOpenPricesFromApi
+          }
+        ]
+      }
+    },
+    getRandomInt () {
+      return Math.floor(Math.random() * (50 - 5 + 1)) + 5
     }
   }
 }
