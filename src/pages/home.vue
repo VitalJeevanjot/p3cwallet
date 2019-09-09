@@ -1,8 +1,8 @@
 <template>
-<q-page padding>
+<q-page padding :class="`bg-${day_night_bg_color}`">
   <q-header class="text-white" style="background-color: #f5f5f5" align="center" elevated>
       <q-toolbar align="center">
-        <q-btn style="cursor: pointer;" fab-mini icon='delete' class='bg-orange-4 text-white invisible' @click="showInsertEncryptionPinDialog=true">
+        <q-btn style="cursor: pointer;" fab-mini :icon='day_night_icon' class='bg-grey-1 text-grey-10' @click="changeDayLightMode()">
     </q-btn>
           <q-avatar style=" display: block;
             margin-left: auto;
@@ -12,7 +12,7 @@
             >
             <img style="height: 50px; width: 50px" src="statics/whale.png">
           </q-avatar>
-          <q-btn style="cursor: pointer;" fab-mini icon='delete' class='bg-red-4 text-white' @click="showInsertEncryptionPinDialog=true">
+          <q-btn style="cursor: pointer;" fab-mini icon='delete' class='bg-grey-8 text-white' @click="showInsertEncryptionPinDialog=true">
     </q-btn>
       </q-toolbar>
   </q-header>
@@ -23,7 +23,7 @@
   <q-page-sticky position='top-right' :offset='[18, 0]' style="z-index: 1">
   </q-page-sticky>
   <q-dialog v-model="openCreateCropEtcValueToSpentDialog" persistent>
-    <q-card>
+    <q-card :class="`bg-${day_night_bg_card_color} text-${day_night_text_color}`">
       <q-card-section>
         <div class="text-h6">Available <span class="text-green" v-if="typeBalance == 'P3C'"> {{typeBalance}} </span> <span class="text-blue" v-if="typeBalance == 'ETC' || typeBalance == 'etc'"> {{typeBalance}} </span> {{getDynBalance}}</div>
         <div class="text-caption">Max Fee <span class="text-red">0.001200011</span> ETC</div>
@@ -33,7 +33,7 @@
         @reset="onReset"
         class="q-gutter-md"
       >
-      <q-card-section v-if="sendingP3C">
+      <q-card-section v-if="sendingP3C" class="bg-white">
         <q-input dense v-model="p3cReceiver" label="P3C Crop of Receiver" type="text"
         lazy-rules
         :rules="[
@@ -41,7 +41,7 @@
         ]"
       />
       </q-card-section>
-      <q-card-section>
+      <q-card-section class="bg-white">
         <q-input dense v-model="valueToSpend" label="Amount" type="number" step="0.0001" min="0.0001" autofocus
         lazy-rules
         :rules="[
@@ -63,13 +63,13 @@
     <span class='text-h5 text-white text-weight-bold'>{{user}}</span>
   </div>
 <q-pull-to-refresh @refresh="refresh">
-  <q-card bordered>
+  <q-card bordered :class="`bg-${day_night_bg_card_color}  text-${day_night_text_color} text-white`">
     <q-card-section v-if='isRegistered'>
       <span class='text-h6 text-weight-light text-green'>My P3C Balance:</span> {{p3cBalance}}
     </q-card-section>
     <q-card-section v-if='isRegistered'>
       <span class='text-h6 text-weight-light text-green'>My P3C Dividends:</span> {{p3cDividends}} <span class="text-overline text-grey-7"> (in compound mode) </span>
-      <q-btn style="cursor: pointer;" v-if="p3cDividends > 0" class="q-ml-sm text-white bg-green-6" icon="get_app" round @click="withdrawDividendsP3C()"></q-btn>
+      <q-btn style="cursor: pointer;" v-if="p3cDividends > 0" class="q-ml-sm text-white bg-white text-grey-8" icon="get_app" round @click="withdrawDividendsP3C()"></q-btn>
     </q-card-section>
       <q-separator inset v-if='isRegistered' />
     <q-card-section v-if='isRegistered'>
@@ -80,8 +80,8 @@
     </q-card-section>
       <q-separator inset v-if='isRegistered' />
     <q-card-section>
-      <span class='text-h6 text-weight-light text-blue'>ETC:</span> {{etcBalance}}
-      <q-btn style="cursor: pointer;" class="q-ml-sm text-white bg-grey-6" @click="openExplorer('ETC')" icon="open_in_new" round></q-btn>
+      <span class='text-h6 text-weight-light text-purple'>ETC:</span> {{etcBalance}}
+      <q-btn style="cursor: pointer;" class="q-ml-sm text-white text-grey-6" @click="openExplorer('ETC')" icon="open_in_new" round></q-btn>
     </q-card-section>
   </q-card>
 </q-pull-to-refresh>
@@ -108,7 +108,7 @@
     <q-fab
       icon="menu"
       direction="up"
-      color="white bg-grey-10 text-white"
+      :color="`white bg-${day_night_text_color} text-${day_night_bg_card_color}`"
     >
     <q-chip color="grey-8" style="height: max-content;">
       <q-fab-action @click="showWalletViewEtc = true" color="white text-green" icon="account_balance_wallet" />
@@ -177,7 +177,7 @@
       transition-show="slide-up"
       transition-hide="slide-down"
     >
-      <q-card class="bg-white text-blue-9">
+      <q-card :class="`bg-${day_night_bg_color} text-blue-9`">
         <q-bar class="bg-white">
           <q-space />
           <q-btn style="cursor: pointer;" dense flat icon="close" v-close-popup>
@@ -191,7 +191,7 @@
         </q-card-section>
         <q-card-section align="center">
           <span class="text-red">Address (Please store it yourself safely)</span>
-        <q-input id="wallet-account" standout @click.native="copyText('wallet-account')" v-model="walletSaved.signingKey.address" readonly>
+        <q-input id="wallet-account" class="bg-white" standout @click.native="copyText('wallet-account')" v-model="walletSaved.signingKey.address" readonly>
         <template v-slot:prepend>
           <q-icon name="file_copy" />
         </template>
@@ -202,7 +202,7 @@
         </q-card-section>
         <q-card-section align="center">
           <span class="text-red">Public Key (Please store it yourself safely)</span>
-        <q-input id="wallet-public" standout v-model="walletSaved.signingKey.publicKey" @click.native="copyText('wallet-public')" readonly>
+        <q-input id="wallet-public" class="bg-white" standout v-model="walletSaved.signingKey.publicKey" @click.native="copyText('wallet-public')" readonly>
         <template v-slot:prepend>
           <q-icon name="file_copy" />
         </template>
@@ -210,7 +210,7 @@
         </q-card-section>
       <q-card-section align="center">
         <span class="text-red">Private Key (Please store it yourself safely)</span>
-        <q-input id="wallet-private" standout v-model="walletSaved.signingKey.privateKey" @click.native="copyText('wallet-private')" :type="isPwd ? 'password' : 'text'" readonly>
+        <q-input id="wallet-private" class="bg-white" standout v-model="walletSaved.signingKey.privateKey" @click.native="copyText('wallet-private')" :type="isPwd ? 'password' : 'text'" readonly>
         <template v-slot:prepend>
           <q-icon name="file_copy" />
         </template>
@@ -226,7 +226,7 @@
         </q-card-section>
         <q-card-section align="center" v-if="isRegistered">
         <span class="text-red">P3C Crop Address (Please store it yourself safely)</span>
-        <q-input id="wallet-p3c-a" standout v-model="p3cCropAddress" @click.native="copyText('wallet-p3c-a')" readonly>
+        <q-input id="wallet-p3c-a" class="bg-white" standout v-model="p3cCropAddress" @click.native="copyText('wallet-p3c-a')" readonly>
         <template v-slot:prepend>
           <q-icon name="file_copy" />
         </template>
@@ -245,8 +245,8 @@
       transition-show="slide-up"
       transition-hide="slide-down"
     >
-      <q-card class="bg-white text-blue-9">
-        <q-bar class="bg-white">
+      <q-card :class="`bg-${day_night_bg_card_color}`">
+        <q-bar :class="`bg-${day_night_bg_card_color} text-${day_night_text_color}`">
           <q-space />
           <q-btn style="cursor: pointer;" dense flat icon="close" v-close-popup>
             <q-tooltip content-class="bg-white text-primary">Close</q-tooltip>
@@ -254,7 +254,7 @@
         </q-bar>
         <q-card-section align="center" v-if="isRegistered">
         <span class="text-red">P3C Crop Address (Send it to the P3C sender to receive P3C)</span>
-        <q-input id="wallet-p3c" standout v-model="p3cCropAddress" @click.native="copyText('wallet-p3c')" readonly>
+        <q-input class="bg-white" id="wallet-p3c" standout v-model="p3cCropAddress" @click.native="copyText('wallet-p3c')" readonly>
         <template v-slot:prepend>
           <q-icon name="file_copy" />
         </template>
@@ -342,13 +342,17 @@ export default {
       datacollection: null,
       chartDataFromApi: null,
       chartDatesFromApi: [],
-      chartOpenPricesFromApi: []
+      chartOpenPricesFromApi: [],
+      day_night_icon: 'brightness_5',
+      day_night_bg_card_color: 'white',
+      day_night_bg_color: 'white',
+      day_night_text_color: 'black'
     }
   },
   mounted () {
     this.$axios.get('https://api.p3c.io/chart/ohlc').then((res) => {
       this.chartDataFromApi = res.data
-      console.log(this.chartDataFromApi)
+      // console.log(this.chartDataFromApi)
       for (let index = 0; index < this.chartDataFromApi.length; index++) {
         this.chartDatesFromApi.push(this.chartDataFromApi[index].Date)
         this.chartOpenPricesFromApi.push(this.chartDataFromApi[index].Open)
@@ -426,6 +430,24 @@ export default {
     this.getMyCrop()
   },
   methods: {
+    changeDayLightMode () {
+      if (this.day_night_icon === 'brightness_5') {
+        this.day_night_icon = 'brightness_6'
+        this.day_night_bg_card_color = 'grey-10'
+        this.day_night_bg_color = 'white'
+        this.day_night_text_color = 'white'
+      } else if (this.day_night_icon === 'brightness_6') {
+        this.day_night_icon = 'brightness_7'
+        this.day_night_bg_card_color = 'grey-10'
+        this.day_night_bg_color = 'grey-10'
+        this.day_night_text_color = 'white'
+      } else if (this.day_night_icon === 'brightness_7') {
+        this.day_night_icon = 'brightness_5'
+        this.day_night_bg_card_color = 'white'
+        this.day_night_bg_color = 'white'
+        this.day_night_text_color = 'black'
+      }
+    },
     refresh (done) {
       this.getcontractInfo()
       this.getETCBalance()
