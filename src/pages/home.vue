@@ -457,7 +457,7 @@ export default {
       let currentValue = await this.farmContractWithSigner.myCropTokens()
       let p3cdivs = await this.farmContractWithSigner.myCropDividends()
       let realBalance = parseFloat(this.$ethers.utils.formatEther(currentValue))
-      this.p3cBalance = parseFloat(this.$ethers.utils.formatEther(currentValue)).toFixed(8).toString()
+      this.p3cBalance = parseFloat(this.$ethers.utils.formatEther(currentValue)).toFixed(3).toString()
       this.p3cDividends = parseFloat(this.$ethers.utils.formatEther(p3cdivs)).toFixed(8).toString()
       this.$axios('https://api.p3c.io/chart/info').then((res) => {
         this.p3cBalanceInEtc = ((res.data.PriceETC * 0.8) * realBalance).toFixed(3)
