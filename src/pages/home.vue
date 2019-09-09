@@ -1,13 +1,26 @@
 <template>
 <q-page padding>
+  <q-header class="text-white" style="background-color: #f5f5f5" align="center" elevated>
+      <q-toolbar align="center">
+        <q-btn style="cursor: pointer;" fab-mini icon='delete' class='bg-orange-4 text-white invisible' @click="showInsertEncryptionPinDialog=true">
+    </q-btn>
+          <q-avatar style=" display: block;
+            margin-left: auto;
+            margin-right: auto;"
+            class = "q-mt-sm"
+            size="72px"
+            >
+            <img style="height: 50px; width: 50px" src="statics/whale.png">
+          </q-avatar>
+          <q-btn style="cursor: pointer;" fab-mini icon='delete' class='bg-red-4 text-white' @click="showInsertEncryptionPinDialog=true">
+    </q-btn>
+      </q-toolbar>
+  </q-header>
   <!-- style='background-image: linear-gradient(white, #00bbff);' -->
   <div class="row justify-center q-ma-sm">
     <q-btn style="cursor: pointer;" @click="openCreateCropModal()" v-if="!isRegistered && this.etcBalance > 0" rounded class="bg-indigo-8 text-white text-overline q-ma-sm" label="Create Crop" />
   </div>
   <q-page-sticky position='top-right' :offset='[18, 0]' style="z-index: 1">
-    <q-btn style="cursor: pointer;" fab-mini icon='delete' class='bg-orange-4 text-white' @click="showInsertEncryptionPinDialog=true">
-      <q-badge color="orange" class="q-ma-sm">Delete</q-badge>
-    </q-btn>
   </q-page-sticky>
   <q-dialog v-model="openCreateCropEtcValueToSpentDialog" persistent>
     <q-card>
@@ -52,17 +65,16 @@
 <q-pull-to-refresh @refresh="refresh">
   <q-card bordered>
     <q-card-section v-if='isRegistered'>
-      <span class='text-h6 text-weight-light text-green'>My P3C Dividends:</span> {{p3cDividends}} <span class="text-overline text-grey-7"> (in compound mode) </span>
-      <q-btn style="cursor: pointer;" v-if="p3cDividends > 0" class="q-ml-sm text-white bg-green-6" icon="get_app" round @click="withdrawDividendsP3C()"></q-btn>
+      <span class='text-h6 text-weight-light text-green'>My P3C Balance:</span> {{p3cBalance}}
     </q-card-section>
     <q-card-section v-if='isRegistered'>
-      <span class='text-h6 text-weight-light text-green'>My P3C Balance:</span> {{p3cBalance}}
+      <span class='text-h6 text-weight-light text-green'>My P3C Dividends:</span> {{p3cDividends}} <span class="text-overline text-grey-7"> (in compound mode) </span>
+      <q-btn style="cursor: pointer;" v-if="p3cDividends > 0" class="q-ml-sm text-white bg-green-6" icon="get_app" round @click="withdrawDividendsP3C()"></q-btn>
     </q-card-section>
       <q-separator inset v-if='isRegistered' />
     <q-card-section v-if='isRegistered'>
       <span class='text-h6 text-weight-light text-green'>IN ETC:</span> {{p3cBalanceInEtc}}
     </q-card-section>
-      <q-separator inset v-if='isRegistered' />
     <q-card-section v-if='isRegistered'>
       <span class='text-h6 text-weight-light text-green'>IN USD:</span> ${{p3cBalanceInUsd}}
     </q-card-section>
@@ -79,14 +91,16 @@
   <div class="row justify-center" v-if="!decryptedData">
     <q-btn style="cursor: pointer;" rounded to="/" class="bg-red-8 text-white text-overline q-ma-sm" label="Go Back" />
   </div>
-  <line-chart :chart-data="datacollection"></line-chart>
+  <div class="q-mb-xl" align="center" style="width: 90vw">
+    <line-chart :chart-data="datacollection"></line-chart>
+  </div>
   <div v-if='isRegistered'>
   <q-page-sticky position='bottom-left' :offset='[18, 18]'>
     <q-btn style="cursor: pointer;" fab-mini icon='arrow_upward' class='bg-green text-white' @click="showOnlyP3CCropAddress = true" >
     </q-btn>
   </q-page-sticky>
   <q-page-sticky position='bottom-right' :offset='[18, 18]'>
-    <q-btn style="cursor: pointer;" fab-mini icon='arrow_downward' class='bg-red text-white' @click="makeTxs('SEND')">
+    <q-btn style="cursor: pointer;" fab-mini icon='arrow_downward' class='bg-blue text-white' @click="makeTxs('SEND')">
     </q-btn>
   </q-page-sticky>
   </div>
@@ -94,25 +108,25 @@
     <q-fab
       icon="menu"
       direction="up"
-      color="white text-blue"
+      color="white bg-grey-10 text-white"
     >
-    <q-chip color="green-4" style="height: max-content;">
+    <q-chip color="grey-8" style="height: max-content;">
       <q-fab-action @click="showWalletViewEtc = true" color="white text-green" icon="account_balance_wallet" />
       <span class="text-overline text-white">Wallet</span>
     </q-chip>
-    <q-chip color="green-4" style="height: max-content;">
+    <q-chip color="grey-8" style="height: max-content;">
       <q-fab-action @click="makeTxs('SELL')" color="white text-red" icon="money_off" />
       <span class="text-overline text-white">SELL</span>
     </q-chip>
-    <q-chip color="green-4" style="height: max-content;">
+    <q-chip color="grey-8" style="height: max-content;">
       <q-fab-action @click="makeTxs('BUY')" color="white text-green" icon="attach_money" />
       <span class="text-overline text-white">BUY</span>
     </q-chip>
-    <q-chip color="green-4" style="height: max-content;">
+    <q-chip color="grey-8" style="height: max-content;">
       <q-fab-action @click="showHistoryDialog = true" color="white text-green" icon="history" />
       <span class="text-overline text-white">History</span>
     </q-chip>
-    <q-chip color="green-4" style="height: max-content;">
+    <q-chip color="grey-8" style="height: max-content;">
       <q-fab-action @click="openExplorer('P3C')" color="white text-green" icon="open_in_new" />
       <span class="text-overline text-white">Explorer</span>
     </q-chip>
@@ -443,8 +457,8 @@ export default {
       let currentValue = await this.farmContractWithSigner.myCropTokens()
       let p3cdivs = await this.farmContractWithSigner.myCropDividends()
       let realBalance = parseFloat(this.$ethers.utils.formatEther(currentValue))
-      this.p3cBalance = parseFloat(this.$ethers.utils.formatEther(currentValue)).toFixed(2).toString()
-      this.p3cDividends = parseFloat(this.$ethers.utils.formatEther(p3cdivs)).toFixed(2).toString()
+      this.p3cBalance = parseFloat(this.$ethers.utils.formatEther(currentValue)).toFixed(8).toString()
+      this.p3cDividends = parseFloat(this.$ethers.utils.formatEther(p3cdivs)).toFixed(8).toString()
       this.$axios('https://api.p3c.io/chart/info').then((res) => {
         this.p3cBalanceInEtc = ((res.data.PriceETC * 0.8) * realBalance).toFixed(3)
         this.p3cBalanceInUsd = ((res.data.PriceUSD * 0.8) * realBalance).toFixed(3)
@@ -784,7 +798,7 @@ export default {
         labels: this.chartDatesFromApi,
         datasets: [
           {
-            label: 'Open Price',
+            label: 'Open Price [USD]',
             borderColor: '#49b86e',
             borderWidth: 1,
             fill: false,
@@ -793,9 +807,6 @@ export default {
           }
         ]
       }
-    },
-    getRandomInt () {
-      return Math.floor(Math.random() * (50 - 5 + 1)) + 5
     }
   }
 }
