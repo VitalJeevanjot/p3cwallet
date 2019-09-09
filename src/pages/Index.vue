@@ -20,14 +20,47 @@
    <q-card>
      <q-card-section class="row items-center justify-center">
        <q-avatar icon="account_circle" color="primary" text-color="white" />
-       <span class="q-ml-sm">Click Private Key to add your ETC Wallet private key to this wallet.</span>
+       <span class="q-ml-sm">Click Private Key to add your ETC Wallet private key to this wallet or use 12 words seed.</span>
      </q-card-section>
 
      <q-card-actions align="right">
+       <q-btn style="cursor: pointer;" flat label="Seed" @click="insertSeedDialog=true" color="primary" v-close-popup />
        <q-btn style="cursor: pointer;" flat label="Private Key" @click="insertPrivateKeyDialog=true" color="primary" v-close-popup />
      </q-card-actions>
    </q-card>
  </q-dialog>
+ <!-- Dialog for inserting seed -->
+ <q-dialog v-model="insertSeedDialog" persistent>
+  <q-card style="min-width: 300px">
+    <q-card-section>
+      <div class="text-h6">Your 12 Words Seed Of Your Existing ETC Wallet.</div>
+    </q-card-section>
+    <q-form
+        @submit="seedAdded"
+        @reset="onReset"
+        class="q-gutter-md"
+      >
+    <q-card-section>
+      <q-input dense :rules="[val => !!val || 'This Field is required']"
+         rounded outlined filled :type="isSeedPwd ? 'password' : 'text'"
+          v-model="seedPhrase" autofocus>
+          <template v-slot:append>
+          <q-icon
+            :name="isSeedPwd ? 'visibility_off' : 'visibility'"
+            class="cursor-pointer"
+            @click="isSeedPwd = !isSeedPwd"
+          />
+        </template>
+      </q-input>
+    </q-card-section>
+
+    <q-card-actions align="right" class="text-primary">
+      <q-btn style="cursor: pointer;" flat label="Close" v-close-popup />
+      <q-btn style="cursor: pointer;" flat label="Add Wallet" type="submit" v-close-popup />
+    </q-card-actions>
+    </q-form>
+  </q-card>
+</q-dialog>
  <!-- Dialog for inserting private key -->
  <q-dialog v-model="insertPrivateKeyDialog" persistent>
   <q-card style="min-width: 300px">
@@ -114,7 +147,9 @@ export default {
       insertSeedDialog: false,
       insertPrivateKeyDialog: false,
       privatekey: null,
+      seedPhrase: null,
       isPwd: true,
+      isSeedPwd: false,
       encryptionPinProvided: false,
       encryptionPin: '',
       showInsertEncryptionPinDialog: true
@@ -133,6 +168,30 @@ export default {
       let cipher = await this.$cryptojs.AES.encrypt(JSON.stringify(randomWallet), this.$q.sessionStorage.getItem('PinEnr')).toString()
       this.$q.localStorage.set('wallet', cipher)
       this.$router.push('home')
+    },
+    async seedAdded () {
+      if (this.encryptionPinProvided === false) {
+        this.showInsertEncryptionPinDialog = true
+        return
+      }
+      let seed = this.seedPhrase
+      let wallet
+      try {
+        wallet = new this.$ethers.Wallet.fromMnemonic(seed) //eslint-disable-line
+      } catch (err) {
+        this.$q.notify({
+          color: 'red',
+          message: 'Problem adding this Seed.'
+        })
+        return
+      }
+      let cipher = await this.$cryptojs.AES.encrypt(JSON.stringify(wallet), this.$q.sessionStorage.getItem('PinEnr')).toString()
+      this.$q.localStorage.set('wallet', cipher)
+      // let walletWithProvider = new this.$ethers.Wallet(privateKey, this.$etcProvider)
+      // console.log(walletWithProvider)
+
+      this.$router.push('home')
+      console.log(wallet)
     },
     async keyAdded () {
       if (this.encryptionPinProvided === false) {

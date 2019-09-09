@@ -209,11 +209,16 @@
         </q-input>
         </q-card-section>
       <q-card-section align="center">
-        <span class="text-red">Private Key (Please store it yourself safely)</span>
+        <span class="text-red">Private Key and Seed (Please store it yourself safely)</span>
         <q-input id="wallet-private" class="bg-white" standout v-model="walletSaved.signingKey.privateKey" @click.native="copyText('wallet-private')" :type="isPwd ? 'password' : 'text'" readonly>
         <template v-slot:prepend>
           <q-icon name="file_copy" />
         </template>
+        </q-input>
+        <q-input id="wallet-seed" class="bg-white q-mt-md" standout v-model="walletSaved.signingKey.mnemonic" @click.native="copyText('wallet-seed')" :type="isPwd ? 'password' : 'text'" readonly>
+          <template v-slot:prepend>
+            <q-icon name="file_copy" />
+          </template>
         </q-input>
         </q-card-section>
         <q-card-section align="center">
