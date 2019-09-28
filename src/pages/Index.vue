@@ -105,6 +105,7 @@
         @submit="onEncryption"
         @reset="onReset"
         class="q-gutter-md"
+        autofocus
       >
       <q-input dense :rules="[val => val.length === 7 || 'Field is required']"
          rounded outlined filled type="text"
@@ -114,7 +115,7 @@
       </q-input>
       <q-card-actions align="right" class="text-primary">
         <q-btn style="cursor: pointer;" flat label="Close" v-close-popup />
-        <q-btn style="cursor: pointer;" class="bg-primary text-white" label="Encrypt Wallet" type="submit" />
+        <q-btn type="submit" style="cursor: pointer;" class="bg-primary text-white" label="Encrypt Wallet" />
     </q-card-actions>
       </q-form>
     </q-card-section>
@@ -229,6 +230,7 @@ export default {
       }
     },
     onReset () {
+      console.log('hello reset')
     },
     openUrl (url) {
       let win = window.open(url, '_blank')

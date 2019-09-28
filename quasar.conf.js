@@ -58,7 +58,8 @@ module.exports = function (ctx) {
         'QBadge',
         'QPullToRefresh',
         'QMarkupTable',
-        'QTooltip'
+        'QTooltip',
+        'QCheckbox'
       ],
 
       directives: [
@@ -98,7 +99,7 @@ module.exports = function (ctx) {
     },
 
     devServer: {
-      https: true,
+      // https: true,
       // port: 8080,
       open: true // opens browser window automatically
     },

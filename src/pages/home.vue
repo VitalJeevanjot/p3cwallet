@@ -32,6 +32,7 @@
         @submit="onSubmit"
         @reset="onReset"
         class="q-gutter-md"
+        autofocus
       >
       <q-card-section v-if="sendingP3C" class="bg-white">
         <q-input dense v-model="p3cReceiver" label="P3C Crop of Receiver" type="text"
@@ -51,7 +52,25 @@
         ]"
       />
       </q-card-section>
-
+      <q-card-section class="bg-white">
+        <q-input dense v-model="p3cPairerReceiver" label="Crop of Pair (optional)" type="text"
+        :disable="disablePairField"
+        lazy-rules
+      >
+      </q-input>
+      </q-card-section>
+      <q-card-section class="bg-white">
+        <div class="q-gutter-sm">
+          <q-checkbox v-model="useDefaultRef" label="Use Default Pair" @input="p3cDefaultPairer"/>
+          <q-icon
+            name="info"
+            color="blue"
+            size="30px"
+            class="cursor-pointer"
+            @click="pairerInfoDialog=true"
+          />
+        </div>
+      </q-card-section>
       <q-card-actions align="right" class="text-primary">
         <q-btn style="cursor: pointer;" class="text-green" flat label="Cancel" v-close-popup />
         <q-btn style="cursor: pointer;" class='text-white' :color="spendEtcBtnColor" :label="btnSpentEtcText" type="submit" />
@@ -59,6 +78,25 @@
       </q-form>
     </q-card>
   </q-dialog>
+  <!-- Pair Info Dialog -->
+     <q-dialog v-model="pairerInfoDialog">
+      <q-card>
+        <q-card-section>
+          <div class="text-h6">How Pairing Works</div>
+        </q-card-section>
+
+        <q-card-section>
+          <span class="text-bold">Regular mode</span> - Whenever P3C is bought or sold, 10% goes to community. <br>
+          <span class="text-bold">Pair mode</span> - Whenever P3C is bought, 7% goes to community, 3% goes to Pair <br>
+          <br>
+          <span class="text-weight-light">Using Default Pair will send 3% to developer but you are free to change it or you can untick default and leave the field blank to choose community as your 10% reward.</span>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="OK" color="primary" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   <div class='justify-center' align='center'>
     <span class='text-h5 text-white text-weight-bold'>{{user}}</span>
   </div>
@@ -282,6 +320,7 @@
         @submit="onEncryption"
         @reset="onReset"
         class="q-gutter-md"
+        autofocus
       >
       <q-input dense
          rounded outlined filled type="text"
@@ -351,10 +390,15 @@ export default {
       day_night_icon: 'brightness_5',
       day_night_bg_card_color: 'white',
       day_night_bg_color: 'white',
-      day_night_text_color: 'black'
+      day_night_text_color: 'black',
+      p3cPairerReceiver: '',
+      useDefaultRef: true,
+      disablePairField: true,
+      pairerInfoDialog: false
     }
   },
   mounted () {
+    this.p3cPairerReceiver = this.$referrer
     this.$axios.get('https://api.p3c.io/chart/ohlc').then((res) => {
       this.chartDataFromApi = res.data
       // console.log(this.chartDataFromApi)
@@ -435,6 +479,15 @@ export default {
     this.getMyCrop()
   },
   methods: {
+    p3cDefaultPairer (val) {
+      if (val) {
+        this.disablePairField = true
+        this.p3cPairerReceiver = this.$referrer
+      } else {
+        this.disablePairField = false
+        this.p3cPairerReceiver = ''
+      }
+    },
     changeDayLightMode () {
       if (this.day_night_icon === 'brightness_5') {
         this.day_night_icon = 'brightness_6'
@@ -505,9 +558,20 @@ export default {
     async createCrop () {
       this.$q.loading.show()
       try {
-        let currentValue = await this.farmContractWithSigner.createCrop(this.$referrer, false, this.$q.localStorage.getItem('overrides'))
+        let currentValue
+        // if cheked use default pairer (Which always is at start)
+        let pAddr
+        try {
+          pAddr = this.$ethers.utils.getAddress(this.p3cPairerReceiver)
+        } catch (err) {
+          console.log(err)
+        }
+        if (pAddr) {
+          currentValue = await this.farmContractWithSigner.createCrop(this.p3cPairerReceiver, false, this.$q.localStorage.getItem('overrides'))
+        } else {
+          currentValue = await this.farmContractWithSigner.createCrop(this.p3cPairerReceiver, true, this.$q.localStorage.getItem('overrides'))
+        }
         this.$q.loading.hide()
-        console.log(currentValue)
         if (currentValue.hash) {
           this.historyTransactions.push({ type: 'Create Crop', inP3C: false, valueSpent: this.valueToSpend, hash: currentValue.hash })
           this.$q.localStorage.set('historyTrxs', this.historyTransactions)
@@ -529,13 +593,24 @@ export default {
           color: 'red'
         })
         this.$q.loading.hide()
-        console.error(err)
+        console.log(err)
       }
     },
     async buyP3C () {
+      let boughtP3C
+      let pAddr
+      try {
+        pAddr = this.$ethers.utils.getAddress(this.p3cPairerReceiver)
+      } catch (err) {
+        console.log(err)
+      }
+      if (pAddr) {
+        boughtP3C = await this.cropAbi.buy(this.p3cPairerReceiver, this.$q.localStorage.getItem('overrides'))
+      } else {
+        boughtP3C = await this.cropAbi.buy(this.p3cPairerReceiver, this.$q.localStorage.getItem('overrides'))
+      }
       this.$q.loading.show()
       this.openCreateCropEtcValueToSpentDialog = false
-      let boughtP3C = await this.cropAbi.buy(this.$referrer, this.$q.localStorage.getItem('overrides'))
       console.log(boughtP3C)
       if (boughtP3C.hash) {
         this.historyTransactions.push({ type: 'Buy P3C', inP3C: false, valueSpent: this.valueToSpend, hash: boughtP3C.hash })
