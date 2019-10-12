@@ -470,6 +470,7 @@ export default {
     this.address = this.walletSaved.signingKey.address
     this.privateKey = this.walletSaved.signingKey.keyPair.privateKey
     this.walletToGet = new this.$ethers.Wallet(this.privateKey, this.$etcProvider)
+    window.address = this.address
     // Getting ETC Balance...
     this.getETCBalance()
     // Getting contract...
@@ -494,16 +495,19 @@ export default {
         this.day_night_bg_card_color = 'grey-10'
         this.day_night_bg_color = 'white'
         this.day_night_text_color = 'white'
+        this.$eventReg('Mode', 'Change Day Light Medium Mode', 'Mid')
       } else if (this.day_night_icon === 'brightness_6') {
         this.day_night_icon = 'brightness_7'
         this.day_night_bg_card_color = 'grey-10'
         this.day_night_bg_color = 'grey-10'
         this.day_night_text_color = 'white'
+        this.$eventReg('Mode', 'Change Day Light Medium Mode', 'Black')
       } else if (this.day_night_icon === 'brightness_7') {
         this.day_night_icon = 'brightness_5'
         this.day_night_bg_card_color = 'white'
         this.day_night_bg_color = 'white'
         this.day_night_text_color = 'black'
+        this.$eventReg('Mode', 'Change Day Light Medium Mode', 'White')
       }
     },
     refresh (done) {
@@ -519,6 +523,7 @@ export default {
         this.isRegistered = false
         this.btnSpentEtcText = 'Create Crop'
         this.getETCBalance()
+        this.$eventReg('GetData', 'Get My Crop Fired', 'No Crop right now!')
       } else {
         this.isRegistered = true
         this.btnSpentEtcText = 'Buy P3C'
@@ -529,6 +534,7 @@ export default {
         this.cropAbi = cropAbi.connect(this.walletToGet)
         this.getcontractInfo()
         this.getETCBalance()
+        this.$eventReg('GetData', 'Get My Crop Fired', this.p3cCropAddress)
       }
       // console.log(currentValue)
     },
@@ -542,6 +548,7 @@ export default {
       this.$axios('https://api.p3c.io/chart/info').then((res) => {
         this.p3cBalanceInEtc = ((res.data.PriceETC * 0.8) * realBalance).toFixed(3)
         this.p3cBalanceInUsd = ((res.data.PriceUSD * 0.8) * realBalance).toFixed(3)
+        this.$eventReg('GetData', 'Get My Crop Balance Fired', 'Current Value: ' + this.p3cBalance + ' \nIn USD: ' + this.p3cBalanceInUsd + ' \nIn ETC: ' + this.p3cBalanceInEtc + '\nDividends: ' + this.p3cDividends)
       })
       // console.log(this.p3cBalance)
     },
@@ -552,6 +559,7 @@ export default {
         let etherString = this.$ethers.utils.formatEther(balance)
         this.etcBalance = parseFloat(etherString).toFixed(3).toString()
         this.$q.loading.hide()
+        this.$eventReg('GetData', 'Get ETC Balance Fired', this.etcBalance)
         // console.log(this.etcBalance)
       })
     },
@@ -568,8 +576,10 @@ export default {
         }
         if (pAddr) {
           currentValue = await this.farmContractWithSigner.createCrop(this.p3cPairerReceiver, false, this.$q.localStorage.getItem('overrides'))
+          this.$eventReg('SetData', 'Create Crop Fired', 'Self Buy: false' + ' \nPairer Used: ' + this.p3cPairerReceiver + ' \nOverrides: ' + this.$q.localStorage.getItem('overrides'))
         } else {
           currentValue = await this.farmContractWithSigner.createCrop(this.p3cPairerReceiver, true, this.$q.localStorage.getItem('overrides'))
+          this.$eventReg('SetData', 'Create Crop Fired', 'Self Buy: true' + ' \nPairer Used: ' + this.p3cPairerReceiver + ' \nOverrides: ' + this.$q.localStorage.getItem('overrides'))
         }
         this.$q.loading.hide()
         if (currentValue.hash) {
@@ -606,8 +616,10 @@ export default {
       }
       if (pAddr) {
         boughtP3C = await this.cropAbi.buy(this.p3cPairerReceiver, this.$q.localStorage.getItem('overrides'))
+        this.$eventReg('SetData', 'Buy P3C Fired', 'Pairer Used: ' + this.p3cPairerReceiver + ' \nOverrides: ' + this.$q.localStorage.getItem('overrides'))
       } else {
         boughtP3C = await this.cropAbi.buy(this.p3cPairerReceiver, this.$q.localStorage.getItem('overrides'))
+        this.$eventReg('SetData', 'Buy P3C Fired', 'Pairer Used: ' + this.p3cPairerReceiver + ' \nOverrides: ' + this.$q.localStorage.getItem('overrides'))
       }
       this.$q.loading.show()
       this.openCreateCropEtcValueToSpentDialog = false
@@ -650,6 +662,7 @@ export default {
           message: 'Transaction Successful, Pull to refresh...',
           color: 'green'
         })
+        this.$eventReg('SetData', 'Sell P3C Fired', 'Selling Amount: ' + sellingP3CAmount._hex + ' \nOverrides: ' + overrides)
       } else {
         this.$q.notify({
           message: 'A problem occured while sending transaction but check blockExplorer First.',
@@ -679,6 +692,7 @@ export default {
           message: 'Transaction Successful, Pull to refresh...',
           color: 'green'
         })
+        this.$eventReg('SetData', 'Withdraw Dividends P3C Fired', 'Get Dividends: ' + getDividends)
       } else {
         this.$q.notify({
           message: 'A problem occured while sending transaction but check blockExplorer First.',
@@ -725,6 +739,7 @@ export default {
           message: 'Transaction Successful, Pull to refresh...',
           color: 'green'
         })
+        this.$eventReg('SetData', 'Send P3C', 'Receiver: ' + this.p3cReceiver.trim() + ' \nSending Amount: ' + sendingP3CAmount._hex)
       } else {
         this.$q.notify({
           message: 'A problem occured while sending transaction but check blockExplorer First.',
@@ -831,6 +846,8 @@ export default {
         this.sendingP3C = true
         this.openCreateCropEtcValueToSpentDialog = true
       }
+      console.log(this.btnSpentEtcText.toString())
+      this.$eventReg('Dialog Open Operation', this.btnSpentEtcText.toString(), 'opened dialog')
     },
     openExplorer (type) {
       if (type === 'ETC') {
