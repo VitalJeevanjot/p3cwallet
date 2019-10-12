@@ -1,47 +1,11 @@
 {
   "@quasar/icon-genie": {
-    "minify_dev": "pngquant",
+    "minify_dev": "optipng",
     "minify_build": "optipng",
     "cordova": {
-      "background_color": "#fffbe8",
+      "background_color": "#ffffff",
       "splashscreen_type": "generate"
     },
-    "build_always": true,
-    "__internal": {
-      "dev": {
-        "electron": {
-          "iconHash": "864d925346c82deb803c87ef14e6fc4a"
-        },
-        "cordova": {
-          "iconHash": "864d925346c82deb803c87ef14e6fc4a",
-          "splashscreenHash": false,
-          "splashscreenType": "generate",
-          "backgroundColor": "#fffbe8"
-        },
-        "pwa": {
-          "iconHash": "864d925346c82deb803c87ef14e6fc4a"
-        },
-        "spa": {
-          "iconHash": "864d925346c82deb803c87ef14e6fc4a"
-        }
-      },
-      "build": {
-        "cordova": {
-          "iconHash": "864d925346c82deb803c87ef14e6fc4a",
-          "splashscreenHash": false,
-          "splashscreenType": "generate",
-          "backgroundColor": "#fffbe8"
-        },
-        "electron": {
-          "iconHash": "864d925346c82deb803c87ef14e6fc4a"
-        },
-        "pwa": {
-          "iconHash": "864d925346c82deb803c87ef14e6fc4a"
-        },
-        "spa": {
-          "iconHash": "864d925346c82deb803c87ef14e6fc4a"
-        }
-      }
-    }
+    "build_always": true
   }
 }

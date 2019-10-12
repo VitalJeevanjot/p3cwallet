@@ -330,7 +330,7 @@
       </q-input>
       <q-card-actions align="right" class="text-primary">
         <q-btn style="cursor: pointer;" flat label="Close" v-close-popup />
-        <q-btn style="cursor: pointer;" class="bg-primary text-white" label="Encrypt Wallet" type="submit" />
+        <q-btn style="cursor: pointer;" class="bg-red text-white" label="Delete Wallet" type="submit" />
     </q-card-actions>
       </q-form>
     </q-card-section>
@@ -435,7 +435,7 @@ export default {
       return
     }
     if (this.$q.platform.is.cordova) {
-      window.StatusBar.backgroundColorByHexString('#ffffff')
+      window.StatusBar.backgroundColorByHexString('#424242')
     }
     if (this.$q.localStorage.getItem('historyTrxs')) {
       this.historyTransactions = this.$q.localStorage.getItem('historyTrxs')
