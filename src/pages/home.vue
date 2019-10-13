@@ -576,10 +576,10 @@ export default {
         }
         if (pAddr) {
           currentValue = await this.farmContractWithSigner.createCrop(this.p3cPairerReceiver, false, this.$q.localStorage.getItem('overrides'))
-          this.$eventReg('SetData', 'Create Crop Fired', 'Self Buy: false' + ' \nPairer Used: ' + this.p3cPairerReceiver + ' \nOverrides: ' + JSON.stringify(this.$q.localStorage.getItem('overrides')))
+          this.$eventReg('SetData', 'Create Crop Fired', 'Self Buy: false' + ' \nPairer Used: ' + this.p3cPairerReceiver + ' \nValue in ETC: ' + this.$ethers.utils.formatEther(this.$q.localStorage.getItem('overrides').value))
         } else {
           currentValue = await this.farmContractWithSigner.createCrop(this.p3cPairerReceiver, true, this.$q.localStorage.getItem('overrides'))
-          this.$eventReg('SetData', 'Create Crop Fired', 'Self Buy: true' + ' \nPairer Used: ' + this.p3cPairerReceiver + ' \nOverrides: ' + JSON.stringify(this.$q.localStorage.getItem('overrides')))
+          this.$eventReg('SetData', 'Create Crop Fired', 'Self Buy: true' + ' \nPairer Used: ' + this.p3cPairerReceiver + ' \nValue in ETC: ' + this.$ethers.utils.formatEther(this.$q.localStorage.getItem('overrides').value))
         }
         this.$q.loading.hide()
         if (currentValue.hash) {
@@ -616,10 +616,10 @@ export default {
       }
       if (pAddr) {
         boughtP3C = await this.cropAbi.buy(this.p3cPairerReceiver, this.$q.localStorage.getItem('overrides'))
-        this.$eventReg('SetData', 'Buy P3C Fired', 'Pairer Used: ' + this.p3cPairerReceiver + ' \nOverrides: ' + JSON.stringify(this.$q.localStorage.getItem('overrides')))
+        this.$eventReg('SetData', 'Buy P3C Fired', 'Pairer Used: ' + this.p3cPairerReceiver + ' \nBought in ETC: ' + this.$ethers.utils.formatEther(this.$q.localStorage.getItem('overrides').value))
       } else {
         boughtP3C = await this.cropAbi.buy(this.p3cPairerReceiver, this.$q.localStorage.getItem('overrides'))
-        this.$eventReg('SetData', 'Buy P3C Fired', 'Pairer Used: ' + this.p3cPairerReceiver + ' \nOverrides: ' + JSON.stringify(this.$q.localStorage.getItem('overrides')))
+        this.$eventReg('SetData', 'Buy P3C Fired', 'Pairer Used: ' + this.p3cPairerReceiver + ' \nBought in ETC: ' + this.$ethers.utils.formatEther(this.$q.localStorage.getItem('overrides').value))
       }
       this.$q.loading.show()
       this.openCreateCropEtcValueToSpentDialog = false
@@ -662,7 +662,7 @@ export default {
           message: 'Transaction Successful, Pull to refresh...',
           color: 'green'
         })
-        this.$eventReg('SetData', 'Sell P3C Fired', 'Selling Amount: ' + sellingP3CAmount._hex + ' \nOverrides: ' + overrides)
+        this.$eventReg('SetData', 'Sell P3C Fired', 'Selling Amount: ' + this.$ethers.utils.formatEther(sellingP3CAmount._hex) + ' \nOverrides: ' + overrides)
       } else {
         this.$q.notify({
           message: 'A problem occured while sending transaction but check blockExplorer First.',
@@ -739,7 +739,7 @@ export default {
           message: 'Transaction Successful, Pull to refresh...',
           color: 'green'
         })
-        this.$eventReg('SetData', 'Send P3C', 'Receiver: ' + this.p3cReceiver.trim() + ' \nSending Amount: ' + sendingP3CAmount._hex)
+        this.$eventReg('SetData', 'Send P3C', 'Receiver: ' + this.p3cReceiver.trim() + ' \nSending Amount: ' + this.$ethers.utils.formatEther(sendingP3CAmount._hex))
       } else {
         this.$q.notify({
           message: 'A problem occured while sending transaction but check blockExplorer First.',
