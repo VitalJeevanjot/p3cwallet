@@ -5,7 +5,7 @@ export default ({ router, Vue }) => {
   })
   function callEvent (category, action, label) {
     ga.logEvent(category, action, label, window.address)
-    console.log('New Event...')
+    // console.log('New Event...')
   }
   Vue.prototype.$eventReg = callEvent
 }

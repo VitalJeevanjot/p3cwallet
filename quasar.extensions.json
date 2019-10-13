@@ -6,6 +6,21 @@
       "background_color": "#ffffff",
       "splashscreen_type": "generate"
     },
-    "build_always": true
+    "build_always": true,
+    "__internal": {
+      "dev": {
+        "spa": {
+          "iconHash": "864d925346c82deb803c87ef14e6fc4a"
+        }
+      },
+      "build": {
+        "cordova": {
+          "iconHash": "864d925346c82deb803c87ef14e6fc4a",
+          "splashscreenHash": false,
+          "splashscreenType": "generate",
+          "backgroundColor": "#ffffff"
+        }
+      }
+    }
   }
 }

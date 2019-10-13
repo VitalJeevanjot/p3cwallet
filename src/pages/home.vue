@@ -401,7 +401,7 @@ export default {
     this.p3cPairerReceiver = this.$referrer
     this.$axios.get('https://api.p3c.io/chart/ohlc').then((res) => {
       this.chartDataFromApi = res.data
-      // console.log(this.chartDataFromApi)
+      // // console.log(this.chartDataFromApi)
       for (let index = 0; index < this.chartDataFromApi.length; index++) {
         this.chartDatesFromApi.push(this.chartDataFromApi[index].Date)
         this.chartOpenPricesFromApi.push(this.chartDataFromApi[index].Open)
@@ -409,20 +409,20 @@ export default {
       this.fillData()
     })
     // ETC Wallet
-    // console.log(cipher)
+    // // console.log(cipher)
     if (!this.$q.localStorage.getItem('wallet')) {
       this.$router.push('/')
     }
     var bytes = this.$cryptojs.AES.decrypt(this.$q.localStorage.getItem('wallet'), this.$q.sessionStorage.getItem('PinEnr'))
-    console.log(bytes)
+    // console.log(bytes)
     this.$q.loading.hide()
     try {
       this.decryptedData = JSON.parse(bytes.toString(this.$cryptojs.enc.Utf8))
     } catch (err) {
-      console.log(err)
+      // console.log(err)
       this.$q.loading.hide()
     }
-    console.log(this.decryptedData)
+    // console.log(this.decryptedData)
     if (this.decryptedData) {
       this.walletSaved = this.decryptedData
     } else {
@@ -439,7 +439,7 @@ export default {
     }
     if (this.$q.localStorage.getItem('historyTrxs')) {
       this.historyTransactions = this.$q.localStorage.getItem('historyTrxs')
-      console.log(this.historyTransactions)
+      // console.log(this.historyTransactions)
     }
     this.$q.loading.show()
     if (!this.$q.localStorage.getItem('overrides') || this.$q.localStorage.getItem('overrides') === null) {
@@ -461,11 +461,11 @@ export default {
       let etherString = this.$ethers.utils.formatEther(this.overrides.value)
       this.valueToSpend = parseFloat(etherString).toFixed(2).toString()
     } else {
-      // console.log('else')
-      // console.log(this.$q.localStorage.getItem('overrides'))
+      // // console.log('else')
+      // // console.log(this.$q.localStorage.getItem('overrides'))
       let etherString = this.$ethers.utils.formatEther(this.$q.localStorage.getItem('overrides').value)
       this.valueToSpend = parseFloat(etherString).toFixed(2).toString()
-      // console.log('elsed')
+      // // console.log('elsed')
     }
     this.address = this.walletSaved.signingKey.address
     this.privateKey = this.walletSaved.signingKey.keyPair.privateKey
@@ -475,7 +475,7 @@ export default {
     this.getETCBalance()
     // Getting contract...
     let farmContract = new this.$ethers.Contract(this.$contracts.farm.address, this.$contracts.farm.abi, this.$etcProvider)
-    // console.log(farmContract)
+    // // console.log(farmContract)
     this.farmContractWithSigner = farmContract.connect(this.walletToGet)
     this.getMyCrop()
   },
@@ -529,14 +529,14 @@ export default {
         this.btnSpentEtcText = 'Buy P3C'
         this.$q.localStorage.set('cropAddress', cropAddress)
         this.p3cCropAddress = cropAddress
-        // console.log(cropAddress)
+        // // console.log(cropAddress)
         let cropAbi = new this.$ethers.Contract(cropAddress, this.$contracts.crop.abi, this.$etcProvider)
         this.cropAbi = cropAbi.connect(this.walletToGet)
         this.getcontractInfo()
         this.getETCBalance()
         this.$eventReg('GetData', 'Get My Crop Fired', this.p3cCropAddress)
       }
-      // console.log(currentValue)
+      // // console.log(currentValue)
     },
     async getcontractInfo () {
       // if balance is zero then show a button to buy p3c
@@ -550,7 +550,7 @@ export default {
         this.p3cBalanceInUsd = ((res.data.PriceUSD * 0.8) * realBalance).toFixed(3)
         this.$eventReg('GetData', 'Get My Crop Balance Fired', 'Current Value: ' + this.p3cBalance + ' \nIn USD: ' + this.p3cBalanceInUsd + ' \nIn ETC: ' + this.p3cBalanceInEtc + '\nDividends: ' + this.p3cDividends)
       })
-      // console.log(this.p3cBalance)
+      // // console.log(this.p3cBalance)
     },
     async getETCBalance () {
       // if balance is zero then show a button to buy p3c
@@ -560,7 +560,7 @@ export default {
         this.etcBalance = parseFloat(etherString).toFixed(3).toString()
         this.$q.loading.hide()
         this.$eventReg('GetData', 'Get ETC Balance Fired', this.etcBalance)
-        // console.log(this.etcBalance)
+        // // console.log(this.etcBalance)
       })
     },
     async createCrop () {
@@ -572,14 +572,14 @@ export default {
         try {
           pAddr = this.$ethers.utils.getAddress(this.p3cPairerReceiver)
         } catch (err) {
-          console.log(err)
+          // console.log(err)
         }
         if (pAddr) {
           currentValue = await this.farmContractWithSigner.createCrop(this.p3cPairerReceiver, false, this.$q.localStorage.getItem('overrides'))
-          this.$eventReg('SetData', 'Create Crop Fired', 'Self Buy: false' + ' \nPairer Used: ' + this.p3cPairerReceiver + ' \nOverrides: ' + this.$q.localStorage.getItem('overrides'))
+          this.$eventReg('SetData', 'Create Crop Fired', 'Self Buy: false' + ' \nPairer Used: ' + this.p3cPairerReceiver + ' \nOverrides: ' + JSON.stringify(this.$q.localStorage.getItem('overrides')))
         } else {
           currentValue = await this.farmContractWithSigner.createCrop(this.p3cPairerReceiver, true, this.$q.localStorage.getItem('overrides'))
-          this.$eventReg('SetData', 'Create Crop Fired', 'Self Buy: true' + ' \nPairer Used: ' + this.p3cPairerReceiver + ' \nOverrides: ' + this.$q.localStorage.getItem('overrides'))
+          this.$eventReg('SetData', 'Create Crop Fired', 'Self Buy: true' + ' \nPairer Used: ' + this.p3cPairerReceiver + ' \nOverrides: ' + JSON.stringify(this.$q.localStorage.getItem('overrides')))
         }
         this.$q.loading.hide()
         if (currentValue.hash) {
@@ -603,7 +603,7 @@ export default {
           color: 'red'
         })
         this.$q.loading.hide()
-        console.log(err)
+        // console.log(err)
       }
     },
     async buyP3C () {
@@ -612,18 +612,18 @@ export default {
       try {
         pAddr = this.$ethers.utils.getAddress(this.p3cPairerReceiver)
       } catch (err) {
-        console.log(err)
+        // console.log(err)
       }
       if (pAddr) {
         boughtP3C = await this.cropAbi.buy(this.p3cPairerReceiver, this.$q.localStorage.getItem('overrides'))
-        this.$eventReg('SetData', 'Buy P3C Fired', 'Pairer Used: ' + this.p3cPairerReceiver + ' \nOverrides: ' + this.$q.localStorage.getItem('overrides'))
+        this.$eventReg('SetData', 'Buy P3C Fired', 'Pairer Used: ' + this.p3cPairerReceiver + ' \nOverrides: ' + JSON.stringify(this.$q.localStorage.getItem('overrides')))
       } else {
         boughtP3C = await this.cropAbi.buy(this.p3cPairerReceiver, this.$q.localStorage.getItem('overrides'))
-        this.$eventReg('SetData', 'Buy P3C Fired', 'Pairer Used: ' + this.p3cPairerReceiver + ' \nOverrides: ' + this.$q.localStorage.getItem('overrides'))
+        this.$eventReg('SetData', 'Buy P3C Fired', 'Pairer Used: ' + this.p3cPairerReceiver + ' \nOverrides: ' + JSON.stringify(this.$q.localStorage.getItem('overrides')))
       }
       this.$q.loading.show()
       this.openCreateCropEtcValueToSpentDialog = false
-      console.log(boughtP3C)
+      // console.log(boughtP3C)
       if (boughtP3C.hash) {
         this.historyTransactions.push({ type: 'Buy P3C', inP3C: false, valueSpent: this.valueToSpend, hash: boughtP3C.hash })
         this.$q.localStorage.set('historyTrxs', this.historyTransactions)
@@ -654,7 +654,7 @@ export default {
         chainId: 61
       }
       let soldP3C = await this.cropAbi.sell(sellingP3CAmount._hex, overrides)
-      console.log(soldP3C)
+      // console.log(soldP3C)
       if (soldP3C.hash) {
         this.historyTransactions.push({ type: 'Sell P3C', inP3C: true, valueSpent: this.valueToSpend, hash: soldP3C.hash })
         this.$q.localStorage.set('historyTrxs', this.historyTransactions)
@@ -684,7 +684,7 @@ export default {
         chainId: 61
       }
       let getDividends = await this.cropAbi.withdraw(overrides)
-      console.log(getDividends)
+      // console.log(getDividends)
       if (getDividends.hash) {
         this.historyTransactions.push({ type: 'Withdraw Dividends', inP3C: true, valueSpent: this.valueToSpend, hash: getDividends.hash })
         this.$q.localStorage.set('historyTrxs', this.historyTransactions)
@@ -731,7 +731,7 @@ export default {
         })
         this.$q.loading.hide()
       }
-      console.log(sentP3C)
+      // console.log(sentP3C)
       if (sentP3C.hash) {
         this.historyTransactions.push({ type: 'Sent P3C', inP3C: true, etcSpent: this.valueToSpend, hash: sentP3C.hash })
         this.$q.localStorage.set('historyTrxs', this.historyTransactions)
@@ -771,7 +771,7 @@ export default {
         // The chain ID (or network ID) to use
         chainId: 61
       }
-      console.log(this.overrides)
+      // console.log(this.overrides)
       this.$q.localStorage.set('overrides', this.overrides)
     },
     onSubmit () {
@@ -789,7 +789,7 @@ export default {
       // }
       // let sendPromise = this.walletToGet.sendTransaction(tx)
       // sendPromise.then((tx) => {
-      //   console.log(tx)
+      //   // console.log(tx)
       //   // {
       //   //    // All transaction fields will be present
       //   //    "nonce", "gasLimit", "pasPrice", "to", "value", "data",
@@ -798,7 +798,7 @@ export default {
       // })
 
       // #=> Creating crop
-      console.log('in submit')
+      // console.log('in submit')
       if (this.btnSpentEtcText === 'Create Crop') {
         this.setOvrride()
         this.createCrop()
@@ -846,7 +846,7 @@ export default {
         this.sendingP3C = true
         this.openCreateCropEtcValueToSpentDialog = true
       }
-      console.log(this.btnSpentEtcText.toString())
+      // console.log(this.btnSpentEtcText.toString())
       this.$eventReg('Dialog Open Operation', this.btnSpentEtcText.toString(), 'opened dialog')
     },
     openExplorer (type) {
@@ -870,7 +870,7 @@ export default {
     },
     async copyText (txt) {
       let copyTextarea = document.querySelector(`#${txt}`)
-      // console.log(copyTextarea)
+      // // console.log(copyTextarea)
       if (copyTextarea.type !== 'text') {
         this.$q.notify({
           color: 'primary',
@@ -879,13 +879,13 @@ export default {
         return
       }
       // copyTextarea.setAttribute('type', 'text')
-      // console.log(copyTextarea)
+      // // console.log(copyTextarea)
       copyTextarea.disabled = false
       copyTextarea.focus()
       copyTextarea.select()
       try {
         var successful = await document.execCommand('copy')
-        // console.log(successful)
+        // // console.log(successful)
         var msg = successful ? 'to clipboard!' : 'unsuccessfully'
         this.$q.notify({
           color: 'green',
@@ -898,7 +898,7 @@ export default {
       }
     },
     onEncryption () {
-      console.log(this.encryptionPin.length)
+      // console.log(this.encryptionPin.length)
       let pin = this.encryptionPin.trim().replace(/-/g, '')
       if (this.$q.sessionStorage.getItem('PinEnr') === pin) {
         this.$q.localStorage.clear()

@@ -189,10 +189,10 @@ export default {
       let cipher = await this.$cryptojs.AES.encrypt(JSON.stringify(wallet), this.$q.sessionStorage.getItem('PinEnr')).toString()
       this.$q.localStorage.set('wallet', cipher)
       // let walletWithProvider = new this.$ethers.Wallet(privateKey, this.$etcProvider)
-      // console.log(walletWithProvider)
+      // // console.log(walletWithProvider)
 
       this.$router.push('home')
-      console.log(wallet)
+      // console.log(wallet)
     },
     async keyAdded () {
       if (this.encryptionPinProvided === false) {
@@ -214,13 +214,13 @@ export default {
       let cipher = await this.$cryptojs.AES.encrypt(JSON.stringify(wallet), this.$q.sessionStorage.getItem('PinEnr')).toString()
       this.$q.localStorage.set('wallet', cipher)
       // let walletWithProvider = new this.$ethers.Wallet(privateKey, this.$etcProvider)
-      // console.log(walletWithProvider)
+      // // console.log(walletWithProvider)
 
       this.$router.push('home')
-      console.log(wallet)
+      // console.log(wallet)
     },
     onEncryption () {
-      console.log(this.encryptionPin.length)
+      // console.log(this.encryptionPin.length)
       let pin = this.encryptionPin.trim().replace(/-/g, '')
       this.$q.sessionStorage.set('PinEnr', pin)
       this.encryptionPinProvided = true
@@ -230,7 +230,7 @@ export default {
       }
     },
     onReset () {
-      console.log('hello reset')
+      // console.log('hello reset')
     },
     openUrl (url) {
       let win = window.open(url, '_blank')

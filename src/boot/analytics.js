@@ -10,15 +10,15 @@ export default {
   },
 
   logPage (path, name, sessionId) {
-    console.log(window.dataLayer)
+    // console.log(window.dataLayer)
     window.dataLayer.push({
       'screenPath': path,
       'screenName': name,
       'sessionID': sessionId
     })
-    console.log(window.dataLayer)
+    // console.log(window.dataLayer)
     window.dataLayer.push({ 'event': 'appScreenView' })
-    console.warn('pushing data...')
-    console.log(window.dataLayer)
+    // console.warn('pushing data...')
+    // console.log(window.dataLayer)
   }
 }

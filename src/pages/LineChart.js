@@ -31,7 +31,7 @@ export default {
           enabled: true,
           callbacks: {
             label: (tooltipItems, data) => {
-              console.log(this)
+              // console.log(this)
               return '$' + tooltipItems.yLabel
             }
           }
